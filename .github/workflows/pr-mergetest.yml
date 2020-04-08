@@ -10,7 +10,12 @@ jobs:
 
     steps:
     - name: Log pull request event workload
-      run: cat ${{ github.event_path }}
+      run: |
+        jq .pull_request._links.commits.href ${{ github.event_path }} | xargs curl | jq .\[\].sha | python <<EOF
+        import sys
+        inp = sys.stdin.readlines()
+        print("::set-output name=source_commits::" + inp[0] if len(inp) == 1 else f"{inp[0]}..{inp[-1]}")
+        EOF
     - uses: bziemons/mergetest-docker-action@master
       with:
         target_branch: master
