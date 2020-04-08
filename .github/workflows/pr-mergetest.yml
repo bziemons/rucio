@@ -1,0 +1,16 @@
+name: Pull request test release branch merge
+
+on:
+  pull_request:
+    branches: [ next ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Log pull request event workload
+      run: cat ${{ github.event_path }}
+    - uses: ./.github/actions/mergetest-docker-action
+      with:
+        target_branch: master
