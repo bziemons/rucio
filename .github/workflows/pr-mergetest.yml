@@ -1,0 +1,18 @@
+name: Pull request test release branch merge
+
+on:
+  pull_request:
+    branches: [ next ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Fetch pull request commit range
+      id: prcommits
+      run: 'jq .pull_request._links.commits.href ${{ github.event_path }} | xargs curl | jq .\[\].sha | python3 -c ''import sys; print("::set-output name=source_commits::" + (lambda l: l[0] if len(l) == 1 else f"{l[0]}^..{l[-1]}")(list(map(lambda l: l.rstrip().strip("\""), sys.stdin.readlines()))))'''
+    - uses: bziemons/mergetest-docker-action@master
+      with:
+        source_commits: ${{ steps.prcommits.outputs.source_commits }}
+        target_branch: master
