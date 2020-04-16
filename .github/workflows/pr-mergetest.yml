@@ -33,4 +33,4 @@ jobs:
       - name: Run docker-compose-storage-build composition
         run: 'docker-compose --file etc/docker/dev/docker-compose-storage-build.yml up -d'
       - name: Run tests with docker
-        run: 'docker-compose --file etc/docker/dev/docker-compose-storage-build.yml exec rucio tools/run_tests_docker.sh -r'
+        run: 'docker-compose --file etc/docker/dev/docker-compose-storage-build.yml exec -T rucio tools/run_tests_docker.sh -r'
