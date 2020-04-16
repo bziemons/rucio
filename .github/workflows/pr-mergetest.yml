@@ -1,18 +1,36 @@
-name: Pull request test release branch merge
+name: Test PR into release
 
 on:
   pull_request:
     branches: [ next ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Fetch pull request commit range
-      id: prcommits
-      run: 'jq .pull_request._links.commits.href ${{ github.event_path }} | xargs curl | jq .\[\].sha | python3 -c ''import sys; print("::set-output name=source_commits::" + (lambda l: l[0] if len(l) == 1 else f"{l[0]}^..{l[-1]}")(list(map(lambda l: l.rstrip().strip("\""), sys.stdin.readlines()))))'''
-    - uses: ./.github/actions/mergetest-docker-action
-      with:
-        source_commits: ${{ steps.prcommits.outputs.source_commits }}
-        target_branch: master
+      - name: Fetch pull request commit range
+        id: prcommits
+        run: 'jq .pull_request._links.commits.href ${{ github.event_path }} | xargs curl | jq .\[\].sha | python3 -c ''import sys; print("::set-output name=source_commits::" + (lambda l: l[0] if len(l) == 1 else f"{l[0]}^..{l[-1]}")(list(map(lambda l: l.rstrip().strip("\""), sys.stdin.readlines()))))'''
+      - uses: ./.github/actions/mergetest-docker-action
+        with:
+          source_commits: ${{ steps.prcommits.outputs.source_commits }}
+          target_branch: master
+      - name: Fetch containers repository and fetch or build images
+        run: |
+          git clone https://github.com/rucio/containers.git ./containers
+          echo "cloned containers repository to ./containers"
+          tar cf ./containers/dev/rucio.tar --exclude=containers *
+          echo "rucio.tar packed for container image"
+          sudo chown -R $(stat -c "%U:%G" .) .
+          echo "changed ownership of workdir recursively to $(stat -c "%U:%G" .)"
+          sed -i 's/^RUN git clone https:\/\/github.com\/rucio\/rucio.git \/tmp\/rucio/ADD rucio.tar \/tmp\/rucio/' ./containers/dev/Dockerfile
+          echo "replaced git clone with adding rucio.tar in rucio dev Dockerfile"
+          sed 's/image: rucio\/rucio-dev/build: ..\/..\/..\/containers\/dev/' ./etc/docker/dev/docker-compose-storage.yml > ./etc/docker/dev/docker-compose-storage-build.yml
+          echo "replaced image with build context in docker-compose-storage-build.yml"
+          docker-compose --file etc/docker/dev/docker-compose-storage-build.yml build --pull --no-cache
+          echo "built and fetched images for docker-compose-storage-build.yml"
+      - name: Run docker-compose-storage-build composition
+        run: 'docker-compose --file etc/docker/dev/docker-compose-storage-build.yml up -d'
+      - name: Run tests with docker
+        run: 'docker-compose --file etc/docker/dev/docker-compose-storage-build.yml exec -T rucio tools/run_tests_docker.sh -r'
