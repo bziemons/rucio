@@ -19,8 +19,11 @@ jobs:
       - name: Fetch containers repository and fetch or build images
         run: |
           git clone https://github.com/rucio/containers.git ./containers
+          echo "cloned containers repository to ./containers"
           tar cf ./containers/dev/rucio.tar --exclude=containers *
           echo "rucio.tar packed for container image"
+          sudo chown -R $(stat -c "%U:%G" .) .
+          echo "changed ownership of workdir recursively to $(stat -c "%U:%G" .)"
           sed -i 's/^RUN git clone https:\/\/github.com\/rucio\/rucio.git \/tmp\/rucio/ADD rucio.tar \/tmp\/rucio/' ./containers/dev/Dockerfile
           echo "replaced git clone with adding rucio.tar in rucio dev Dockerfile"
           sed 's/image: rucio\/rucio-dev/build: ..\/..\/..\/containers\/dev/' ./etc/docker/dev/docker-compose-storage.yml > ./etc/docker/dev/docker-compose-storage-build.yml
