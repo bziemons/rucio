@@ -2,20 +2,39 @@ name: Test PR into release
 
 on:
   pull_request:
-    branches: [ next ]
+    branches:
+      - 'master'
 
 jobs:
   test:
+    if: '!startsWith(github.event.pull_request.head.ref, ''feature'')'
     runs-on: ubuntu-latest
-
     steps:
+      - name: Grab latest release branch
+        id: grabrelease
+        run: |
+          curl $(echo "${{ github.event.repository.branches_url }}" | sed 's/{\/branch}//') | \
+          python3 -c 'import sys; import json; print("::set-output name=release_branch::", \
+          max(filter(lambda b: b.startswith("release"), (b["name"] for b in json.loads(sys.stdin.read()))), \
+              default="no release branch found"), sep="")'
+      - name: Fail if no release branch was found
+        if: steps.grabrelease.outputs.release_branch == 'no release branch found'
+        run: /bin/false
+      - uses: actions/checkout@v2
+        with:
+          ref: master
       - name: Fetch pull request commit range
         id: prcommits
-        run: 'jq .pull_request._links.commits.href ${{ github.event_path }} | xargs curl | jq .\[\].sha | python3 -c ''import sys; print("::set-output name=source_commits::" + (lambda l: l[0] if len(l) == 1 else f"{l[0]}^..{l[-1]}")(list(map(lambda l: l.rstrip().strip("\""), sys.stdin.readlines()))))'''
+        run: |
+          curl "${{ github.event.pull_request.commits_url }}" | \
+          python3 -c 'import sys; import json; print("::set-output name=source_commits::", \
+          (lambda l: f"{l[0]}^..{l[-1]}")([c["sha"] for c in json.loads(sys.stdin.read())]), sep="")'
       - uses: ./.github/actions/mergetest-docker-action
         with:
+          source_remote: ${{ github.event.pull_request.head.repo.full_name }}
           source_commits: ${{ steps.prcommits.outputs.source_commits }}
-          target_branch: master
+          target_remote: ${{ github.event.pull_request.base.repo.full_name }}
+          target_branch: ${{ steps.grabrelease.outputs.release_branch }}
       - name: Fetch containers repository and fetch or build images
         run: |
           git clone https://github.com/rucio/containers.git ./containers
@@ -34,3 +53,5 @@ jobs:
         run: 'docker-compose --file etc/docker/dev/docker-compose-storage-build.yml up -d'
       - name: Run tests with docker
         run: 'docker-compose --file etc/docker/dev/docker-compose-storage-build.yml exec -T rucio tools/run_tests_docker.sh -r'
+      - name: Stop and remove containers
+        run: 'docker-compose --file etc/docker/dev/docker-compose-storage-build.yml down'

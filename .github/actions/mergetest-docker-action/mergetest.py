@@ -63,10 +63,10 @@ def main():
     source_commits = get_input("source_commits")
     try:
         git("cherry-pick", source_commits)
-        print(f"Source commits ({source_commits}) were successfully cherry-picked"
+        print(f"Source commits ({source_commits}) were successfully cherry-picked "
               f"onto {get_input('target_remote')}:{get_input('target_branch')}", file=sys.stderr)
     except sh.ErrorReturnCode:
-        print(f"Source commits ({source_commits}) could not be cherry-picked"
+        print(f"Source commits ({source_commits}) could not be cherry-picked "
               f"onto {get_input('target_remote')}:{get_input('target_branch')}", file=sys.stderr)
         raise
 
