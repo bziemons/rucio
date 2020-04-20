@@ -31,9 +31,9 @@ jobs:
           (lambda l: f"{l[0]}^..{l[-1]}")([c["sha"] for c in json.loads(sys.stdin.read())]), sep="")'
       - uses: ./.github/actions/mergetest-docker-action
         with:
-          source_remote: ${{ github.event.pull_request.head.clone_url }}
+          source_remote: ${{ github.event.pull_request.head.repo.full_name }}
           source_commits: ${{ steps.prcommits.outputs.source_commits }}
-          target_remote: ${{ github.event.pull_request.base.clone_url }}
+          target_remote: ${{ github.event.pull_request.base.repo.full_name }}
           target_branch: ${{ steps.grabrelease.outputs.release_branch }}
       - name: Fetch containers repository and fetch or build images
         run: |
