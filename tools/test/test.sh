@@ -18,24 +18,22 @@
 
 set -eo pipefail
 
-#tools/test/install_script.sh
-#
-#tools/test/before_script.sh
-
 if [[ $SUITE == "syntax" ]]; then
-  tools/test/check_syntax.sh
+    cd /usr/local/src/rucio
+    tools/test/check_syntax.sh
 fi
 
 if [[ $SUITE == "python3" ]]; then
-  tools/test/check_python_3.sh
+    cd /usr/local/src/rucio
+    tools/test/check_python_3.sh
 fi
 
 if [[ $SUITE == "client" ]]; then
-  nosetests -v lib/rucio/tests/test_clients.py
-  nosetests -v lib/rucio/tests/test_bin_rucio.py
-  nosetests -v lib/rucio/tests/test_module_import.py
+    nosetests -v lib/rucio/tests/test_clients.py
+    nosetests -v lib/rucio/tests/test_bin_rucio.py
+    nosetests -v lib/rucio/tests/test_module_import.py
 fi
 
 if [[ $SUITE == "all" ]]; then
-  tools/run_tests_docker.sh
+    tools/run_tests_docker.sh
 fi

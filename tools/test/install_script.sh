@@ -33,16 +33,12 @@ if [[ $SUITE == "client" ]]; then
     cp /usr/local/src/rucio/etc/docker/test/extra/rucio_client.cfg etc/rucio.cfg
 
 elif [[ $SUITE == "syntax" ]]; then
+    cd /usr/local/src/rucio
     pip install setuptools_scm
     pip install google_compute_engine
-    cp /usr/local/src/rucio/etc/docker/test/extra/rucio_syntax.cfg etc/rucio.cfg
-    cp /usr/local/src/rucio/etc/google-cloud-storage-test.json etc/
-    cp /usr/local/src/rucio/etc/idpsecrets.json etc/
-    cp /usr/local/src/rucio/pylintrc ./
-    cp /usr/local/src/rucio/changed_files.txt ./
-    mkdir -p doc
-    cp -r /usr/local/src/rucio/doc/source doc/
+    cp etc/docker/test/extra/rucio_syntax.cfg etc/rucio.cfg
 
 elif [[ $SUITE == 'python3' ]]; then
-    pip install -r /usr/local/src/rucio/etc/pip-requires-test
+    cd /usr/local/src/rucio
+    pip install -r etc/pip-requires-test
 fi
