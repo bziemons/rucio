@@ -37,5 +37,6 @@ jobs:
           target_branch: ${{ steps.grabrelease.outputs.release_branch }}
       - name:
         run: |
+          pip3 install -U pip setuptools
           pip3 install -r etc/pip-requires-test
           tools/run_autotests.sh
