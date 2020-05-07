@@ -35,23 +35,7 @@ jobs:
           source_commits: ${{ steps.prcommits.outputs.source_commits }}
           target_remote: ${{ github.event.pull_request.base.repo.full_name }}
           target_branch: ${{ steps.grabrelease.outputs.release_branch }}
-      - name: Fetch containers repository and fetch or build images
+      - name:
         run: |
-          git clone https://github.com/rucio/containers.git ./containers
-          echo "cloned containers repository to ./containers"
-          tar cf ./containers/dev/rucio.tar --exclude=containers *
-          echo "rucio.tar packed for container image"
-          sudo chown -R $(stat -c "%U:%G" .) .
-          echo "changed ownership of workdir recursively to $(stat -c "%U:%G" .)"
-          sed -i 's/^RUN git clone https:\/\/github.com\/rucio\/rucio.git \/tmp\/rucio/ADD rucio.tar \/tmp\/rucio/' ./containers/dev/Dockerfile
-          echo "replaced git clone with adding rucio.tar in rucio dev Dockerfile"
-          sed 's/image: rucio\/rucio-dev/build: ..\/..\/..\/containers\/dev/' ./etc/docker/dev/docker-compose-storage.yml > ./etc/docker/dev/docker-compose-storage-build.yml
-          echo "replaced image with build context in docker-compose-storage-build.yml"
-          docker-compose --file etc/docker/dev/docker-compose-storage-build.yml build --pull --no-cache
-          echo "built and fetched images for docker-compose-storage-build.yml"
-      - name: Run docker-compose-storage-build composition
-        run: 'docker-compose --file etc/docker/dev/docker-compose-storage-build.yml up -d'
-      - name: Run tests with docker
-        run: 'docker-compose --file etc/docker/dev/docker-compose-storage-build.yml exec -T rucio tools/run_tests_docker.sh -r'
-      - name: Stop and remove containers
-        run: 'docker-compose --file etc/docker/dev/docker-compose-storage-build.yml down'
+          pip3 install -r etc/pip-requires-test
+          tools/run_autotests.sh

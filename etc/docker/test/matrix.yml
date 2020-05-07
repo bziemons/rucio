@@ -1,0 +1,27 @@
+dists:
+  - id: centos7
+    whitelist:
+      python: ["2.7", "3.6"]
+python:
+  - id: "2.7"
+    blacklist:
+      suites: python3
+  - "3.6"
+  - "3.7"
+  - "3.8"
+suites:
+  - syntax
+  - id: python3
+    whitelist:
+      python: "3.8"
+  - id: all
+    RDBMS:
+      - oracle
+      - mysql5
+      - mysql8
+      - postgres9
+      - postgres12
+      - sqlite
+  - id: client
+    RDBMS: sqlite
+    RUCIO_HOME: $(pwd)
