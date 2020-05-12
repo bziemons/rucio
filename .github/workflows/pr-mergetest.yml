@@ -29,14 +29,19 @@ jobs:
           curl "${{ github.event.pull_request.commits_url }}" | \
           python3 -c 'import sys; import json; print("::set-output name=source_commits::", \
           (lambda l: f"{l[0]}^..{l[-1]}")([c["sha"] for c in json.loads(sys.stdin.read())]), sep="")'
-      - uses: ./.github/actions/mergetest-docker-action
+      - uses: .github/actions/mergetest-docker-action
         with:
           source_remote: ${{ github.event.pull_request.head.repo.full_name }}
           source_commits: ${{ steps.prcommits.outputs.source_commits }}
           target_remote: ${{ github.event.pull_request.base.repo.full_name }}
           target_branch: ${{ steps.grabrelease.outputs.release_branch }}
-      - name:
+      - name: Change ownership of workdir recursively
+        run: sudo chown -R $(stat -c "%U:%G" .) .
+      - name: Install pip test requirements
         run: |
           pip3 install -U pip setuptools
+          echo "upgraded pip and setuptools"
           pip3 install -r etc/pip-requires-test
-          tools/run_autotests.sh
+          echo "installed requirements of test packages"
+      - name: Run tests
+        run: tools/run_autotests.sh
