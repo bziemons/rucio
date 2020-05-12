@@ -32,20 +32,18 @@ def matches(small: typing.Dict, group: typing.Dict):
 
 
 def run(*args, env=None):
-    print("Running", " ".join(args), "with env", env, file=sys.stderr)
+    print("Running", " ".join(args), file=sys.stderr)
     if env is None:
-        subprocess.run(args, check=True)
+        subprocess.run(args, check=True, stdout=sys.stderr, stderr=subprocess.STDOUT)
     else:
-        subprocess.run(args, check=True, env=env)
+        subprocess.run(args, check=True, stdout=sys.stderr, stderr=subprocess.STDOUT, env=env)
 
 
 def main():
     obj = json.load(sys.stdin)
-    matrix = obj["matrix"]
-    images = obj["images"]
 
-    for case in matrix:
-        for image, idgroup in images.items():
+    for case in obj["matrix"]:
+        for image, idgroup in obj["images"].items():
             if matches(idgroup, case):
                 # Running rucio
                 args = ('docker', 'run', '--detach',
@@ -58,6 +56,8 @@ def main():
                     raise RuntimeError("Could not determine container id after docker run")
 
                 try:
+                    print("*** Starting", {**case, "IMAGE": image}, file=sys.stderr)
+
                     # Running install_script.sh
                     run('docker', 'exec', '-t', cid, './tools/test/install_script.sh')
 
@@ -67,6 +67,8 @@ def main():
                     # Running test.sh
                     run('docker', 'exec', '-t', cid, './tools/test/test.sh')
                 finally:
+                    print("*** Finalizing", {**case, "IMAGE": image}, file=sys.stderr)
+
                     run('docker', 'stop', cid)
                     run('docker', 'rm', '-v', cid)
 

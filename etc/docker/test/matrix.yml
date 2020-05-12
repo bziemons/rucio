@@ -24,4 +24,4 @@ suites:
       - sqlite
   - id: client
     RDBMS: sqlite
-    RUCIO_HOME: $(pwd)
+    RUCIO_HOME: /opt/rucio
