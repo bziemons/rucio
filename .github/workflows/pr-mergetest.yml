@@ -29,7 +29,8 @@ jobs:
           curl "${{ github.event.pull_request.commits_url }}" | \
           python3 -c 'import sys; import json; print("::set-output name=source_commits::", \
           (lambda l: f"{l[0]}^..{l[-1]}")([c["sha"] for c in json.loads(sys.stdin.read())]), sep="")'
-      - uses: .github/actions/mergetest-docker-action
+      - name: Test cherry-picking changes
+        uses: ./.github/actions/mergetest-docker-action
         with:
           source_remote: ${{ github.event.pull_request.head.repo.full_name }}
           source_commits: ${{ steps.prcommits.outputs.source_commits }}
