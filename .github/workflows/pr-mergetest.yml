@@ -62,13 +62,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        conf: ${{ fromJson(needs.setup.outputs.matrix) }}
-    runs-on: ${{ matrix.os }}
+        cfg: ${{ fromJson(needs.setup.outputs.matrix) }}
+    runs-on: ubuntu-latest
     steps:
-      - name: ls output
-        run: ls -lah
-      - name: environment
-        run: env
-      - name: matrix json
-        run: echo "${{ toJson(matrix.conf) }}"
+      - uses: actions/checkout@v2
+      - name: Run test with cfg
+        run: |
+          cd etc/docker/test
+          echo '{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ needs.setup.outputs.images }}' | ./run_tests.py
