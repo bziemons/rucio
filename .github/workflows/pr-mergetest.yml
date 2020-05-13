@@ -69,4 +69,4 @@ jobs:
       - name: Run test with cfg
         run: |
           cd etc/docker/test
-          echo '{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ needs.setup.outputs.images }}' | ./run_tests.py
+          echo '{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ needs.setup.outputs.images }} }' | ./run_tests.py
