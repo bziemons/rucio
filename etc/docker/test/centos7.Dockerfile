@@ -25,46 +25,46 @@
 FROM centos:7
 ARG PYTHON
 
-RUN yum install -y epel-release.noarch
-RUN yum -y update
-RUN yum install -y gcc httpd python-pip gmp-devel krb5-devel httpd mod_ssl mod_auth_kerb git python-devel.x86_64 openssl-devel.x86_64 gridsite which libaio memcached MySQL-python ffi-devel
-RUN yum -y install https://centos7.iuscommunity.org/ius-release.rpm
-RUN yum -y install python36u python36u-devel python36u-pip
-RUN yum -y install libxml2-devel xmlsec1-devel xmlsec1-openssl-devel libtool-ltdl-devel
-RUN yum clean all
+RUN yum install -y epel-release.noarch && \
+  yum -y update && \
+  yum install -y gcc httpd python-pip gmp-devel krb5-devel httpd mod_ssl mod_auth_kerb git python-devel.x86_64 openssl-devel.x86_64 gridsite which libaio memcached MySQL-python ffi-devel && \
+  yum -y install https://centos7.iuscommunity.org/ius-release.rpm && \
+  if [ "$PYTHON" == "3.6" ] ; then yum -y install python36u python36u-devel python36u-pip ; fi && \
+  yum -y install libxml2-devel xmlsec1-devel xmlsec1-openssl-devel libtool-ltdl-devel && \
+  if [ "$PYTHON" == "3.6" ] ; then yum -y install python36u-mod_wsgi ; else yum -y install mod_wsgi ; fi && \
+  yum clean all
 
 RUN rm -rf /usr/lib/python2.7/site-packages/ipaddress*
-RUN if [ "$PYTHON" == "3.6" ] ; then yum -y install python36u-mod_wsgi ; else yum -y install mod_wsgi ; fi
 
 # Install sqlite3 because CentOS ships with an old version without window functions
-RUN curl https://www.sqlite.org/2019/sqlite-autoconf-3290000.tar.gz > sqlite.tar.gz
-RUN tar xvfz sqlite.tar.gz
-WORKDIR ./sqlite-autoconf-3290000
-RUN ./configure --prefix=/usr/local --libdir=/usr/local/lib64
-RUN make -j
-RUN make install
+RUN curl https://www.sqlite.org/2019/sqlite-autoconf-3290000.tar.gz > sqlite.tar.gz &&
+  tar xvfz sqlite.tar.gz && \
+  cd ./sqlite-autoconf-3290000 && \
+  ./configure --prefix=/usr/local --libdir=/usr/local/lib64 && \
+  make -j && \
+  make install && \
+  cd .. && rm -rf ./sqlite-autoconf-3290000 && rm -f sqlite.tar.gz
 
 RUN if [ "$PYTHON" == "2.7" ] ; then ln -sf python2.7 /usr/bin/python ; ln -sf pip2.7 /usr/bin/pip ; fi
 RUN if [ "$PYTHON" == "3.6" ] ; then ln -sf python3.6 /usr/bin/python ; ln -sf pip3.6 /usr/bin/pip ; fi
 # Get the latest setuptools version
 # to fix the setup.py error:
 # install fails with: `install_requires` must be a string or list of strings
-RUN pip install --upgrade pip setuptools
+RUN pip install --no-cache-dir --upgrade pip setuptools
 
-RUN mkdir -p /var/log/rucio/trace
-RUN chmod -R 777 /var/log/rucio
+RUN mkdir -p /var/log/rucio/trace && \
+  chmod -R 777 /var/log/rucio
 
 WORKDIR /usr/local/src/rucio
 COPY . .
 
 RUN git diff --name-status HEAD $(git merge-base HEAD master) | grep '^(bin/|lib/|tools/).+\.py$' | grep -v '^A' | grep -v 'conf.py' | cut -f 2 | paste -sd " " - > changed_files.txt
 
-RUN cp etc/certs/hostcert_rucio.pem /etc/grid-security/hostcert.pem
-RUN cp etc/certs/hostcert_rucio.key.pem /etc/grid-security/hostkey.pem && chmod 0400 /etc/grid-security/hostkey.pem
-
-RUN cp etc/docker/test/extra/httpd.conf /etc/httpd/conf/httpd.conf
-RUN cp etc/docker/test/extra/rucio.conf /etc/httpd/conf.d/rucio.conf
-RUN cp etc/docker/test/extra/00-mpm.conf /etc/httpd/conf.modules.d/00-mpm.conf
+RUN cp etc/certs/hostcert_rucio.pem /etc/grid-security/hostcert.pem && \
+  cp etc/certs/hostcert_rucio.key.pem /etc/grid-security/hostkey.pem && chmod 0400 /etc/grid-security/hostkey.pem && \
+  cp etc/docker/test/extra/httpd.conf /etc/httpd/conf/httpd.conf && \
+  cp etc/docker/test/extra/rucio.conf /etc/httpd/conf.d/rucio.conf && \
+  cp etc/docker/test/extra/00-mpm.conf /etc/httpd/conf.modules.d/00-mpm.conf && \
 
 RUN rm /etc/httpd/conf.d/ssl.conf /etc/httpd/conf.d/autoindex.conf /etc/httpd/conf.d/userdir.conf /etc/httpd/conf.d/welcome.conf /etc/httpd/conf.d/zgridsite.conf
 
@@ -73,11 +73,11 @@ RUN rpm -i etc/docker/test/extra/oic.rpm; \
     ldconfig
 
 WORKDIR /opt/rucio
-RUN cp -r /usr/local/src/rucio/{lib,bin,tools} ./
-RUN mkdir -p etc/web && cp /usr/local/src/rucio/etc/web/aliases.conf etc/web/
-RUN mkdir -p etc/certs && cp /usr/local/src/rucio/etc/certs/{rucio_ca.pem,ruciouser.pem,ruciouser.key.pem} etc/certs/
+RUN cp -r /usr/local/src/rucio/{lib,bin,tools} ./ && \
+  mkdir -p etc/web && cp /usr/local/src/rucio/etc/web/aliases.conf etc/web/ && \
+  mkdir -p etc/certs && cp /usr/local/src/rucio/etc/certs/{rucio_ca.pem,ruciouser.pem,ruciouser.key.pem} etc/certs/
 
 # Install Rucio + dependencies
-RUN pip install /usr/local/src/rucio[oracle,postgresql,mysql,kerberos,dev,saml]
+RUN pip install --no-cache-dir /usr/local/src/rucio[oracle,postgresql,mysql,kerberos,dev,saml]
 
 CMD ["httpd","-D","FOREGROUND"]
