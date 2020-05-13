@@ -57,7 +57,7 @@ RUN chmod -R 777 /var/log/rucio
 WORKDIR /usr/local/src/rucio
 COPY . .
 
-RUN git diff --name-status HEAD $(git merge-base HEAD master) | grep \.py$ | grep -v '^A' | grep -v 'conf.py' | cut -f 2 | paste -sd " " - > changed_files.txt
+RUN git diff --name-status HEAD $(git merge-base HEAD master) | grep '^(bin/|lib/|tools/).+\.py$' | grep -v '^A' | grep -v 'conf.py' | cut -f 2 | paste -sd " " - > changed_files.txt
 
 RUN cp etc/certs/hostcert_rucio.pem /etc/grid-security/hostcert.pem
 RUN cp etc/certs/hostcert_rucio.key.pem /etc/grid-security/hostkey.pem && chmod 0400 /etc/grid-security/hostkey.pem

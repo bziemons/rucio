@@ -6,7 +6,7 @@ on:
       - 'master'
 
 jobs:
-  test:
+  setup:
     if: '!startsWith(github.event.pull_request.head.ref, ''feature'')'
     runs-on: ubuntu-latest
     steps:
@@ -44,5 +44,31 @@ jobs:
           echo "upgraded pip and setuptools"
           pip3 install -r etc/pip-requires-test
           echo "installed requirements of test packages"
-      - name: Run tests
-        run: tools/run_autotests.sh
+      - name: Identify Matrix
+        id: matrix
+        run: |
+          cd etc/docker/test
+          echo "::set-output name=matrix::$(./matrix_parser.py < matrix.yml)"
+      - name: Build images
+        id: images
+        run: |
+          cd etc/docker/test
+          echo "::set-output name=images::$(echo '${{ steps.matrix.outputs.matrix }}' | ./build_images.py)"
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      images: ${{ steps.images.outputs.images }}
+  test:
+    needs: setup
+    strategy:
+      fail-fast: no
+      matrix:
+        os: [ubuntu-latest]
+        include: ${{ fromJson(needs.setup.outputs.matrix) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: ls output
+        run: ls -lah
+      - name: environment
+        run: env
+      - name: matrix json
+        run: echo "${{ toJson(matrix) }}"
