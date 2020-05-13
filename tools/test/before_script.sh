@@ -40,8 +40,8 @@ if [[ $RDBMS == "oracle" ]]; then
     done
     date
     docker exec oracle /bin/bash -c "/oracle_setup.sh"
-    docker exec rucio cp /opt/rucio/etc/docker/test/rucio_oracle.cfg /opt/rucio/etc/rucio.cfg
-    docker exec rucio cp /opt/rucio/etc/docker/test/alembic_oracle.ini /opt/rucio/etc/alembic.ini
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/rucio_oracle.cfg /opt/rucio/etc/rucio.cfg
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/alembic_oracle.ini /opt/rucio/etc/alembic.ini
     docker exec rucio httpd -k restart
 
 elif [[ $RDBMS == "mysql5" ]]; then
@@ -53,8 +53,8 @@ elif [[ $RDBMS == "mysql5" ]]; then
         sleep 1
     done
     date
-    docker exec rucio cp /opt/rucio/etc/docker/test/rucio_mysql5.cfg /opt/rucio/etc/rucio.cfg
-    docker exec rucio cp /opt/rucio/etc/docker/test/alembic_mysql5.ini /opt/rucio/etc/alembic.ini
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/rucio_mysql5.cfg /opt/rucio/etc/rucio.cfg
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/alembic_mysql5.ini /opt/rucio/etc/alembic.ini
     docker exec rucio httpd -k restart
 
 elif [[ $RDBMS == "mysql8" ]]; then
@@ -66,8 +66,8 @@ elif [[ $RDBMS == "mysql8" ]]; then
         sleep 1
     done
     date
-    docker exec rucio cp /opt/rucio/etc/docker/test/rucio_mysql8.cfg /opt/rucio/etc/rucio.cfg
-    docker exec rucio cp /opt/rucio/etc/docker/test/alembic_mysql8.ini /opt/rucio/etc/alembic.ini
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/rucio_mysql8.cfg /opt/rucio/etc/rucio.cfg
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/alembic_mysql8.ini /opt/rucio/etc/alembic.ini
     docker exec rucio httpd -k restart
 
 elif [[ $RDBMS == "postgres9" ]]; then
@@ -79,8 +79,8 @@ elif [[ $RDBMS == "postgres9" ]]; then
         sleep 1
     done
     date
-    docker exec rucio cp /opt/rucio/etc/docker/test/rucio_postgres9.cfg /opt/rucio/etc/rucio.cfg
-    docker exec rucio cp /opt/rucio/etc/docker/test/alembic_postgres9.ini /opt/rucio/etc/alembic.ini
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/rucio_postgres9.cfg /opt/rucio/etc/rucio.cfg
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/alembic_postgres9.ini /opt/rucio/etc/alembic.ini
     docker exec rucio httpd -k restart
 
 elif [[ $RDBMS == "postgres12" ]]; then
@@ -92,14 +92,14 @@ elif [[ $RDBMS == "postgres12" ]]; then
         sleep 1
     done
     date
-    docker exec rucio cp /opt/rucio/etc/docker/test/rucio_postgres12.cfg /opt/rucio/etc/rucio.cfg
-    docker exec rucio cp /opt/rucio/etc/docker/test/alembic_postgres12.ini /opt/rucio/etc/alembic.ini
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/rucio_postgres12.cfg /opt/rucio/etc/rucio.cfg
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/alembic_postgres12.ini /opt/rucio/etc/alembic.ini
     docker exec rucio httpd -k restart
 
 elif [[ $RDBMS == "sqlite" ]]; then
     docker run -d -p 443:443 --name=rucio $IMAGE
-    docker exec rucio cp /opt/rucio/etc/docker/test/rucio_sqlite.cfg /opt/rucio/etc/rucio.cfg
-    docker exec rucio cp /opt/rucio/etc/docker/test/alembic_sqlite.ini /opt/rucio/etc/alembic.ini
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/rucio_sqlite.cfg /opt/rucio/etc/rucio.cfg
+    docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/alembic_sqlite.ini /opt/rucio/etc/alembic.ini
     docker exec rucio httpd -k restart
 fi
 
