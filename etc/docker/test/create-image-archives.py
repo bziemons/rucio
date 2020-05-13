@@ -32,7 +32,7 @@ def main():
     os.chdir(images_path)
     for img in images.keys():
         archive = f"{img[img.rfind(':')+1:]}.tar"
-        args = ("docker", "images", "save", "--output", archive, img)
+        args = ("docker", "image", "save", "--output", archive, img)
         print("Running", *args, file=sys.stderr)
         subprocess.check_call(args)
 
