@@ -31,7 +31,7 @@ def main():
     os.chdir(images_path)
     for img in images.keys():
         archive = f"{img[img.rfind(':')+1:]}.tar.xz"
-        args = ("sh", "-c", f"xzcat {archive} | docker image load {img}")
+        args = ("sh", "-c", f"xzcat {archive} | docker image load")
         print("Running", *args, file=sys.stderr)
         subprocess.check_call(args)
 
