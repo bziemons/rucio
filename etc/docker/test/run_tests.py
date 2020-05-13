@@ -41,8 +41,9 @@ def run(*args, env=None):
 
 def main():
     obj = json.load(sys.stdin)
+    cases = (obj["matrix"], ) if isinstance(obj["matrix"], dict) else obj["matrix"]
 
-    for case in obj["matrix"]:
+    for case in cases:
         for image, idgroup in obj["images"].items():
             if matches(idgroup, case):
                 # Running rucio
