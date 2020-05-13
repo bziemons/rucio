@@ -29,7 +29,7 @@ if [[ $SUITE == "client" ]]; then
     pip install -r /usr/local/src/rucio/etc/pip-requires
     pip install setuptools_scm
     pip install -r /usr/local/src/rucio/etc/pip-requires-test
-    python setup_rucio_client.py install
+    python /usr/local/src/rucio/setup_rucio_client.py install
     cp /usr/local/src/rucio/etc/docker/test/extra/rucio_client.cfg etc/rucio.cfg
 
 elif [[ $SUITE == "syntax" ]]; then
