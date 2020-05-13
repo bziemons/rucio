@@ -64,8 +64,7 @@ RUN cp etc/certs/hostcert_rucio.pem /etc/grid-security/hostcert.pem && \
   cp etc/docker/test/extra/httpd.conf /etc/httpd/conf/httpd.conf && \
   cp etc/docker/test/extra/rucio.conf /etc/httpd/conf.d/rucio.conf && \
   cp etc/docker/test/extra/00-mpm.conf /etc/httpd/conf.modules.d/00-mpm.conf && \
-
-RUN rm /etc/httpd/conf.d/ssl.conf /etc/httpd/conf.d/autoindex.conf /etc/httpd/conf.d/userdir.conf /etc/httpd/conf.d/welcome.conf /etc/httpd/conf.d/zgridsite.conf
+  rm /etc/httpd/conf.d/ssl.conf /etc/httpd/conf.d/autoindex.conf /etc/httpd/conf.d/userdir.conf /etc/httpd/conf.d/welcome.conf /etc/httpd/conf.d/zgridsite.conf
 
 RUN rpm -i etc/docker/test/extra/oic.rpm; \
     echo "/usr/lib/oracle/12.2/client64/lib" >/etc/ld.so.conf.d/oracle.conf; \

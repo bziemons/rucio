@@ -54,6 +54,13 @@ jobs:
         run: |
           cd etc/docker/test
           echo "::set-output name=images::$(echo '${{ steps.matrix.outputs.matrix }}' | ./build_images.py)"
+      - name: Export docker image archives
+        run: echo '${{ steps.images.outputs.images }}' | etc/docker/test/create-image-archives.py
+      - name: Upload images as artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: images
+          path: 'images/*'
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       images: ${{ steps.images.outputs.images }}
@@ -66,6 +73,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: images
+          path: images
+      - name: Import docker image archives
+        run: echo '${{ steps.images.outputs.images }}' | etc/docker/test/import-image-archives.py
       - name: Run test with cfg
         run: |
           cd etc/docker/test
