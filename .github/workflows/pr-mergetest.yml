@@ -60,7 +60,7 @@ jobs:
   test:
     needs: setup
     strategy:
-      fail-fast: no
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         include: ${{ fromJson(needs.setup.outputs.matrix) }}
