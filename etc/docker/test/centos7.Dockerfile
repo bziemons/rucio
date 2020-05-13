@@ -37,13 +37,12 @@ RUN yum install -y epel-release.noarch && \
 RUN rm -rf /usr/lib/python2.7/site-packages/ipaddress*
 
 # Install sqlite3 because CentOS ships with an old version without window functions
-RUN curl https://www.sqlite.org/2019/sqlite-autoconf-3290000.tar.gz > sqlite.tar.gz &&
-  tar xvfz sqlite.tar.gz && \
+RUN curl https://www.sqlite.org/2019/sqlite-autoconf-3290000.tar.gz | tar xzv && \
   cd ./sqlite-autoconf-3290000 && \
   ./configure --prefix=/usr/local --libdir=/usr/local/lib64 && \
   make -j && \
   make install && \
-  cd .. && rm -rf ./sqlite-autoconf-3290000 && rm -f sqlite.tar.gz
+  cd .. && rm -rf ./sqlite-autoconf-3290000
 
 RUN if [ "$PYTHON" == "2.7" ] ; then ln -sf python2.7 /usr/bin/python ; ln -sf pip2.7 /usr/bin/pip ; fi
 RUN if [ "$PYTHON" == "3.6" ] ; then ln -sf python3.6 /usr/bin/python ; ln -sf pip3.6 /usr/bin/pip ; fi
