@@ -78,7 +78,7 @@ jobs:
           name: images
           path: images
       - name: Import docker image archives
-        run: echo '${{ steps.images.outputs.images }}' | etc/docker/test/import-image-archives.py
+        run: echo '${{ needs.setup.outputs.images }}' | etc/docker/test/import-image-archives.py
       - name: Run test with cfg
         run: |
           cd etc/docker/test
