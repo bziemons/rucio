@@ -104,6 +104,7 @@ elif [[ $RDBMS == "sqlite" ]]; then
 fi
 
 if [[ $SUITE == "client" ]]; then
+    # rucio container is assumed to be started above
     docker exec rucio /bin/sh -c "/opt/rucio/tools/run_tests_docker.sh -i"
 fi
 

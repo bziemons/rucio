@@ -43,6 +43,8 @@ def main():
     obj = json.load(sys.stdin)
     cases = (obj["matrix"], ) if isinstance(obj["matrix"], dict) else obj["matrix"]
 
+    os.chdir("/opt/rucio")
+
     for case in cases:
         for image, idgroup in obj["images"].items():
             if matches(idgroup, case):
@@ -63,7 +65,7 @@ def main():
                     run('docker', 'exec', '-t', cid, './tools/test/install_script.sh')
 
                     # Running before_script.sh
-                    run('../../../tools/test/before_script.sh', env={**os.environ, **case, "IMAGE": image})
+                    run('./tools/test/before_script.sh', env={**os.environ, **case, "IMAGE": image})
 
                     # Running test.sh
                     run('docker', 'exec', '-t', cid, './tools/test/test.sh')
