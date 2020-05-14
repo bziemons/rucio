@@ -43,8 +43,6 @@ def main():
     obj = json.load(sys.stdin)
     cases = (obj["matrix"], ) if isinstance(obj["matrix"], dict) else obj["matrix"]
 
-    os.chdir("/opt/rucio")
-
     for case in cases:
         for image, idgroup in obj["images"].items():
             if matches(idgroup, case):

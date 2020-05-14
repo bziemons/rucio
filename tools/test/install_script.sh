@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2018-2019 CERN for the benefit of the ATLAS collaboration.
+# Copyright 2018-2020 CERN for the benefit of the ATLAS collaboration.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ if [[ $SUITE == "client" ]]; then
     pip install -r etc/pip-requires-test
     python setup_rucio_client.py install
     cp etc/docker/test/extra/rucio_client.cfg /opt/rucio/etc/rucio.cfg
+    cp -r etc/mail_templates /opt/rucio/etc/
 
 elif [[ $SUITE == "syntax" ]]; then
     cd /usr/local/src/rucio

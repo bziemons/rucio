@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2018-2019 CERN for the benefit of the ATLAS collaboration.
+# Copyright 2018-2020 CERN for the benefit of the ATLAS collaboration.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,9 +25,12 @@ set -eo pipefail
 docker info
 
 if [[ $RDBMS == "oracle" ]]; then
+    # delete if directory exists
     rm -rf docker-oracle-xe-11g/
     git clone https://github.com/wnameless/docker-oracle-xe-11g.git
     docker build -t rucio/oraclexe --file docker-oracle-xe-11g/Dockerfile docker-oracle-xe-11g/
+    # cleanup
+    rm -rf docker-oracle-xe-11g/
 
     docker run -d -p 8080:8080 -p 1521:1521 --name=oracle -e processes=1000 -e sessions=1105 -e transactions=1215 -e ORACLE_ALLOW_REMOTE=true -e ORACLE_DISABLE_ASYNCH_IO=true rucio/oraclexe
     docker run --name=activemq -d webcenter/activemq:latest

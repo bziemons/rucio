@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2018-2019 CERN for the benefit of the ATLAS collaboration.
+# Copyright 2020 CERN for the benefit of the ATLAS collaboration.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,4 +22,6 @@ cd etc/docker/test
 
 export MATRIX=$(./matrix_parser.py < matrix.yml)
 export IMAGES=$(echo $MATRIX | ./build_images.py)
-echo "{\"matrix\": $MATRIX, \"images\": $IMAGES}" | ./run_tests.py
+
+cd ../../../
+echo "{\"matrix\": $MATRIX, \"images\": $IMAGES}" | ./etc/docker/test/run_tests.py

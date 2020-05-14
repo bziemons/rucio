@@ -80,6 +80,4 @@ jobs:
       - name: Import docker image archives
         run: echo '${{ needs.setup.outputs.images }}' | etc/docker/test/import-image-archives.py
       - name: Run test with cfg
-        run: |
-          cd etc/docker/test
-          echo '{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ needs.setup.outputs.images }} }' | ./run_tests.py
+        run: 'echo ''{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ needs.setup.outputs.images }} }'' | ./etc/docker/test/run_tests.py'
