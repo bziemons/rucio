@@ -46,20 +46,22 @@ def main():
     for case in cases:
         for image, idgroup in obj["images"].items():
             if matches(idgroup, case):
+                cid = "rucio"
+                print("*** Starting", {**case, "IMAGE": image}, file=sys.stderr)
                 try:
-                    print("*** Starting", {**case, "IMAGE": image}, file=sys.stderr)
-
                     # Running before_script.sh
                     run('./tools/test/before_script.sh', env={**os.environ, **case, "IMAGE": image})
 
                     # A container named "rucio" might have been spawned by before_script
                     args = ('docker', 'inspect', '--type', 'container', 'rucio')
                     print("Checking for running rucio container", file=sys.stderr)
-                    proc = subprocess.run(args, stdout=subprocess.PIPE, check=True)
-                    rucio_containers = json.loads(proc.stdout)
-                    if len(rucio_containers) != 0 and rucio_containers[0]["State"]["Running"]:
-                        cid = "rucio"
-                    else:
+                    proc = subprocess.run(args, stdout=subprocess.PIPE, check=False)
+                    try:
+                        rucio_containers = json.loads(proc.stdout)
+                    except ValueError:
+                        rucio_containers = []
+
+                    if len(rucio_containers) == 0 or not rucio_containers[0]["State"]["Running"]:
                         # Running rucio container if not already started
                         args = ('docker', 'run', '--detach',
                                 *itertools.chain(*map(lambda x: ('--env', f'{x[0]}={x[1]}'), case.items())),
@@ -78,8 +80,9 @@ def main():
                 finally:
                     print("*** Finalizing", {**case, "IMAGE": image}, file=sys.stderr)
 
-                    run('docker', 'stop', cid)
-                    run('docker', 'rm', '-v', cid)
+                    if cid:
+                        run('docker', 'stop', cid)
+                        run('docker', 'rm', '-v', cid)
 
 
 if __name__ == "__main__":
