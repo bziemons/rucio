@@ -10,6 +10,8 @@ jobs:
     if: '!startsWith(github.event.pull_request.head.ref, ''feature'')'
     runs-on: ubuntu-latest
     steps:
+      - name: Install pip requirements
+        run: pip3 install -U pip setuptools PyYAML
       - name: Grab latest release branch
         id: grabrelease
         run: |
@@ -20,64 +22,43 @@ jobs:
       - name: Fail if no release branch was found
         if: steps.grabrelease.outputs.release_branch == 'no release branch found'
         run: /bin/false
-      - uses: actions/checkout@v2
-        with:
-          ref: master
       - name: Fetch pull request commit range
         id: prcommits
         run: |
           curl "${{ github.event.pull_request.commits_url }}" | \
           python3 -c 'import sys; import json; print("::set-output name=source_commits::", \
           (lambda l: f"{l[0]}^..{l[-1]}")([c["sha"] for c in json.loads(sys.stdin.read())]), sep="")'
-      - name: Test cherry-picking changes
-        uses: ./.github/actions/mergetest-docker-action
-        with:
-          source_remote: ${{ github.event.pull_request.head.repo.full_name }}
-          source_commits: ${{ steps.prcommits.outputs.source_commits }}
-          target_remote: ${{ github.event.pull_request.base.repo.full_name }}
-          target_branch: ${{ steps.grabrelease.outputs.release_branch }}
-      - name: Change ownership of workdir recursively
-        run: sudo chown -R $(stat -c "%U:%G" .) .
-      - name: Install pip test requirements
-        run: |
-          pip3 install -U pip setuptools
-          echo "upgraded pip and setuptools"
-          pip3 install -r etc/pip-requires-test
-          echo "installed requirements of test packages"
       - name: Identify Matrix
         id: matrix
-        run: |
-          cd etc/docker/test
-          echo "::set-output name=matrix::$(./matrix_parser.py < matrix.yml)"
-      - name: Build images
-        id: images
-        run: |
-          cd etc/docker/test
-          echo "::set-output name=images::$(echo '${{ steps.matrix.outputs.matrix }}' | ./build_images.py)"
-      - name: Export docker image archives
-        run: echo '${{ steps.images.outputs.images }}' | etc/docker/test/create-image-archives.py
-      - name: Upload images as artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: images
-          path: 'images/*'
+        run: echo "::set-output name=matrix::$(etc/docker/test/matrix_parser.py < etc/docker/test/matrix.yml)"
     outputs:
+      release_branch: ${{ steps.grabrelease.outputs.release_branch }}
+      prcommits: ${{ steps.prcommits.outputs.source_commits }}
       matrix: ${{ steps.matrix.outputs.matrix }}
-      images: ${{ steps.images.outputs.images }}
   test:
     needs: setup
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         cfg: ${{ fromJson(needs.setup.outputs.matrix) }}
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
         with:
-          name: images
-          path: images
-      - name: Import docker image archives
-        run: echo '${{ needs.setup.outputs.images }}' | etc/docker/test/import-image-archives.py
+          ref: master
+      - name: Test cherry-picking changes
+        uses: ./.github/actions/mergetest-docker-action
+        with:
+          source_remote: ${{ github.event.pull_request.head.repo.full_name }}
+          source_commits: ${{ needs.setup.outputs.prcommits }}
+          target_remote: ${{ github.event.pull_request.base.repo.full_name }}
+          target_branch: ${{ needs.setup.outputs.release_branch }}
+      - name: Change ownership of workdir recursively
+        run: sudo chown -R $(stat -c "%U:%G" .) .
+      - name: Build images
+        id: images
+        run: |
+          cd etc/docker/test
+          echo "::set-output name=images::$(echo '[${{ toJson(matrix.cfg) }}]' | ./build_images.py)"
       - name: Run test with cfg
-        run: 'echo ''{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ needs.setup.outputs.images }} }'' | ./etc/docker/test/run_tests.py'
+        run: 'echo ''{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ steps.images.outputs.images }} }'' | ./etc/docker/test/run_tests.py'
