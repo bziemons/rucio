@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install pip requirements
-        run: pip3 install -U pip setuptools PyYAML
+        run: |
+          pip3 install -U pip setuptools
+          pip3 install -U PyYAML
       - name: Grab latest release branch
         id: grabrelease
         run: |
