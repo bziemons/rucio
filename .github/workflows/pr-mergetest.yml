@@ -30,6 +30,7 @@ jobs:
           curl "${{ github.event.pull_request.commits_url }}" | \
           python3 -c 'import sys; import json; print("::set-output name=source_commits::", \
           (lambda l: f"{l[0]}^..{l[-1]}")([c["sha"] for c in json.loads(sys.stdin.read())]), sep="")'
+      - uses: actions/checkout@v2
       - name: Identify Matrix
         id: matrix
         run: echo "::set-output name=matrix::$(etc/docker/test/matrix_parser.py < etc/docker/test/matrix.yml)"
