@@ -35,6 +35,10 @@ if [[ $SUITE == "client" ]]; then
     rsync -av etc/ /opt/rucio/etc
     cp etc/docker/test/extra/rucio_client.cfg /opt/rucio/etc/rucio.cfg
 
+    # initialize tests
+    cd /opt/rucio
+    tools/run_tests_docker.sh -i
+
 elif [[ $SUITE == "syntax" ]]; then
     cd /usr/local/src/rucio
     pip install setuptools_scm
