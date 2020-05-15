@@ -46,24 +46,32 @@ def main():
     for case in cases:
         for image, idgroup in obj["images"].items():
             if matches(idgroup, case):
-                # Running rucio
-                args = ('docker', 'run', '--detach',
-                        *itertools.chain(*map(lambda x: ('--env', f'{x[0]}={x[1]}'), case.items())),
-                        image)
-                print("Running", " ".join(args), file=sys.stderr)
-                proc = subprocess.run(args, stdout=subprocess.PIPE, check=True)
-                cid = proc.stdout.decode().strip()
-                if not cid:
-                    raise RuntimeError("Could not determine container id after docker run")
-
                 try:
                     print("*** Starting", {**case, "IMAGE": image}, file=sys.stderr)
 
-                    # Running install_script.sh
-                    run('docker', 'exec', '-t', cid, './tools/test/install_script.sh')
-
                     # Running before_script.sh
                     run('./tools/test/before_script.sh', env={**os.environ, **case, "IMAGE": image})
+
+                    # A container named "rucio" might have been spawned by before_script
+                    args = ('docker', 'inspect', '--type', 'container', 'rucio')
+                    print("Checking for running rucio container", file=sys.stderr)
+                    proc = subprocess.run(args, stdout=subprocess.PIPE, check=True)
+                    rucio_containers = json.loads(proc.stdout)
+                    if len(rucio_containers) != 0 and rucio_containers[0]["State"]["Running"]:
+                        cid = "rucio"
+                    else:
+                        # Running rucio container if not already started
+                        args = ('docker', 'run', '--detach',
+                                *itertools.chain(*map(lambda x: ('--env', f'{x[0]}={x[1]}'), case.items())),
+                                image)
+                        print("Running", " ".join(args), file=sys.stderr)
+                        proc = subprocess.run(args, stdout=subprocess.PIPE, check=True)
+                        cid = proc.stdout.decode().strip()
+                        if not cid:
+                            raise RuntimeError("Could not determine container id after docker run")
+
+                    # Running install_script.sh
+                    run('docker', 'exec', '-t', cid, './tools/test/install_script.sh')
 
                     # Running test.sh
                     run('docker', 'exec', '-t', cid, './tools/test/test.sh')
