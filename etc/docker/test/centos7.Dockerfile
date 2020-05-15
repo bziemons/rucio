@@ -72,7 +72,7 @@ RUN rpm -i etc/docker/test/extra/oic.rpm; \
 
 WORKDIR /opt/rucio
 RUN cp -r /usr/local/src/rucio/{lib,bin,tools} ./ && \
-  mkdir -p etc/web && cp /usr/local/src/rucio/etc/web/aliases.conf etc/web/ && \
+  mkdir -p etc/web && cp /usr/local/src/rucio/etc/web/{logging.conf,aliases.conf} etc/web/ && \
   mkdir -p etc/certs && cp /usr/local/src/rucio/etc/certs/{rucio_ca.pem,ruciouser.pem,ruciouser.key.pem} etc/certs/
 
 # Install Rucio + dependencies

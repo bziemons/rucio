@@ -31,8 +31,9 @@ if [[ $SUITE == "client" ]]; then
     pip install setuptools_scm
     pip install -r etc/pip-requires-test
     python setup_rucio_client.py install
+    # client tests seem to need various files from etc
+    rsync -av etc/ /opt/rucio/etc
     cp etc/docker/test/extra/rucio_client.cfg /opt/rucio/etc/rucio.cfg
-    cp -r etc/mail_templates /opt/rucio/etc/
 
 elif [[ $SUITE == "syntax" ]]; then
     cd /usr/local/src/rucio
