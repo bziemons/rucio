@@ -50,7 +50,7 @@ def main():
                 print("*** Starting", {**case, "IMAGE": image}, file=sys.stderr)
                 try:
                     # Running before_script.sh
-                    run('./tools/test/before_script.sh', env={**os.environ, **case, "IMAGE": image})
+                    run('/bin/sh', '-c', 'cat ./tools/test/before_script.sh && ./tools/test/before_script.sh', env={**os.environ, **case, "IMAGE": image})
 
                     # A container named "rucio" might have been spawned by before_script
                     args = ('docker', 'inspect', '--type', 'container', 'rucio')
@@ -73,10 +73,10 @@ def main():
                             raise RuntimeError("Could not determine container id after docker run")
 
                     # Running install_script.sh
-                    run('docker', 'exec', '-t', cid, './tools/test/install_script.sh')
+                    run('docker', 'exec', '-t', cid, 'cat ./tools/test/install_script.sh && ./tools/test/install_script.sh')
 
                     # Running test.sh
-                    run('docker', 'exec', '-t', cid, './tools/test/test.sh')
+                    run('docker', 'exec', '-t', cid, 'cat ./tools/test/test.sh && ./tools/test/test.sh')
                 finally:
                     print("*** Finalizing", {**case, "IMAGE": image}, file=sys.stderr)
 
