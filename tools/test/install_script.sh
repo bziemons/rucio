@@ -37,6 +37,7 @@ if [[ $SUITE == "client" ]]; then
 
     # initialize tests
     cd /opt/rucio
+    httpd -k restart
     tools/run_tests_docker.sh -i
 
 elif [[ $SUITE == "syntax" ]]; then

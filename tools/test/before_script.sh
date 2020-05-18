@@ -103,7 +103,7 @@ elif [[ $RDBMS == "sqlite" ]]; then
     docker run -d -p 443:443 --name=rucio $IMAGE
     docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/rucio_sqlite.cfg /opt/rucio/etc/rucio.cfg
     docker exec rucio cp /usr/local/src/rucio/etc/docker/test/extra/alembic_sqlite.ini /opt/rucio/etc/alembic.ini
-    docker exec rucio httpd -k restart
+#    docker exec rucio httpd -k restart
 fi
 
 docker ps -a
