@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: master
+          ref: ${{ needs.setup.outputs.release_branch }}
       - name: Test cherry-picking changes
         uses: ./.github/actions/mergetest-docker-action
         with:
