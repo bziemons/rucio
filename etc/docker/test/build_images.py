@@ -31,6 +31,8 @@ BuildArgs = collections.namedtuple('BuildArgs', BUILD_ARG_KEYS)
 
 def main():
     matrix = json.load(sys.stdin)
+    matrix = (matrix, ) if isinstance(matrix, dict) else matrix
+
     filter_build_args = partial(map,
                                 lambda argdict: {arg: val for arg, val in argdict.items() if arg in BUILD_ARG_KEYS})
     make_buildargs = partial(map, lambda argdict: BuildArgs(**argdict))
