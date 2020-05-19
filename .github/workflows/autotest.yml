@@ -42,10 +42,7 @@ jobs:
       matrix:
         cfg: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
-      - name: Check out release branch to test changes against it
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ needs.pr_setup.outputs.release_branch }}
+      - uses: actions/checkout@v2
       - name: Install pip requirements
         run: |
           pip3 install -U pip setuptools
