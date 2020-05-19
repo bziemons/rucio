@@ -64,4 +64,6 @@ jobs:
           cd etc/docker/test
           echo "::set-output name=images::$(echo '[${{ toJson(matrix.cfg) }}]' | ./build_images.py)"
       - name: Run test with cfg
-        run: 'echo ''{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ steps.images.outputs.images }} }'' | ./etc/docker/test/run_tests.py'
+        run: |
+          cat ./etc/docker/test/run_tests.py
+          echo '{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ steps.images.outputs.images }} }' | ./etc/docker/test/run_tests.py
