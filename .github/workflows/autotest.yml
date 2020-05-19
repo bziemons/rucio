@@ -62,9 +62,7 @@ jobs:
           cd ./etc/docker/test
           echo "::set-output name=images::$(echo '${{ toJson(matrix.cfg) }}' | ./build_images.py)"
       - name: Run test with cfg
-        run: |
-          cat ./etc/docker/test/run_tests.py
-          echo '{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ steps.images.outputs.images }} }' | ./etc/docker/test/run_tests.py
+        run: 'echo ''{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ steps.images.outputs.images }} }'' | ./etc/docker/test/run_tests.py'
   test:
     needs: setup
     runs-on: ubuntu-latest
@@ -80,6 +78,4 @@ jobs:
           cd ./etc/docker/test
           echo "::set-output name=images::$(echo '${{ toJson(matrix.cfg) }}' | ./build_images.py)"
       - name: Run test with cfg
-        run: |
-          cat ./etc/docker/test/run_tests.py
-          echo '{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ steps.images.outputs.images }} }' | ./etc/docker/test/run_tests.py
+        run: 'echo ''{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ steps.images.outputs.images }} }'' | ./etc/docker/test/run_tests.py'
