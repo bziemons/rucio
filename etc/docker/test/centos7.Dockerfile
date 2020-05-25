@@ -28,7 +28,7 @@ ARG PYTHON
 RUN yum install -y epel-release.noarch && \
   yum -y update && \
   yum install -y gcc httpd python-pip gmp-devel krb5-devel httpd mod_ssl mod_auth_kerb git python-devel.x86_64 openssl-devel.x86_64 gridsite which libaio memcached MySQL-python ffi-devel && \
-  yum -y install https://centos7.iuscommunity.org/ius-release.rpm && \
+  yum -y install https://repo.ius.io/ius-release-el7.rpm && \
   if [ "$PYTHON" == "3.6" ] ; then yum -y install python36u python36u-devel python36u-pip ; fi && \
   yum -y install libxml2-devel xmlsec1-devel xmlsec1-openssl-devel libtool-ltdl-devel && \
   if [ "$PYTHON" == "3.6" ] ; then yum -y install python36u-mod_wsgi ; else yum -y install mod_wsgi ; fi && \
