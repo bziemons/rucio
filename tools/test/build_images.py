@@ -19,6 +19,7 @@
 import collections
 import itertools
 import json
+import pathlib
 import subprocess
 import sys
 import uuid
@@ -31,7 +32,11 @@ BuildArgs = collections.namedtuple('BuildArgs', BUILD_ARG_KEYS)
 
 def main():
     matrix = json.load(sys.stdin)
-    matrix = (matrix, ) if isinstance(matrix, dict) else matrix
+    matrix = (matrix,) if isinstance(matrix, dict) else matrix
+
+    buildfiles_dir = "."
+    if len(sys.argv) > 1:
+        buildfiles_dir = sys.argv[1]
 
     filter_build_args = partial(map,
                                 lambda argdict: {arg: val for arg, val in argdict.items() if arg in BUILD_ARG_KEYS})
@@ -43,9 +48,10 @@ def main():
     for dist, buildargs_list in distribution_buildargs.items():
         for buildargs in buildargs_list:
             imagetag = f'rucio:{dist}-autotest-{uuid.uuid4()}'
-            args = ('docker', 'build', '--file', f'{dist}.Dockerfile', '--tag', imagetag,
+            buildfile = pathlib.Path(buildfiles_dir) / f'{dist}.Dockerfile'
+            args = ('docker', 'build', '--file', str(buildfile), '--tag', imagetag,
                     *itertools.chain(*map(lambda x: ('--build-arg', f'{x[0]}={x[1]}'), buildargs._asdict().items())),
-                    '../../..')
+                    '.')
             print("Running", " ".join(args), file=sys.stderr)
             subprocess.run(args, stdout=sys.stderr, check=True)
             print("Finished building image", imagetag, file=sys.stderr)

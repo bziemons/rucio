@@ -18,10 +18,6 @@
 
 set -eo pipefail
 
-cd etc/docker/test
-
-export MATRIX=$(./matrix_parser.py < matrix.yml)
-export IMAGES=$(echo $MATRIX | ./build_images.py)
-
-cd ../../../
-echo "{\"matrix\": $MATRIX, \"images\": $IMAGES}" | ./etc/docker/test/run_tests.py
+export MATRIX=$(./tools/test/matrix_parser.py < ./etc/docker/test/matrix.yml)
+export IMAGES=$(echo $MATRIX | ./tools/test/build_images.py ./etc/docker/test)
+echo "{\"matrix\": $MATRIX, \"images\": $IMAGES}" | ./tools/test/run_tests.py

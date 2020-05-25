@@ -29,7 +29,7 @@ jobs:
           pip3 install -U PyYAML # needed by matrix_parser.py
       - name: Identify Matrix
         id: matrix
-        run: echo "::set-output name=matrix::$(./etc/docker/test/matrix_parser.py < ./etc/docker/test/matrix.yml)"
+        run: echo "::set-output name=matrix::$(./tools/test/matrix_parser.py < ./etc/docker/test/matrix.yml)"
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
   pr_releasetest:
@@ -58,11 +58,9 @@ jobs:
           }' | ./tools/github/workflow/mergetest.py
       - name: Build images
         id: images
-        run: |
-          cd ./etc/docker/test
-          echo "::set-output name=images::$(echo '${{ toJson(matrix.cfg) }}' | ./build_images.py)"
+        run: echo "::set-output name=images::$(echo '${{ toJson(matrix.cfg) }}' | ./tools/test/build_images.py ./etc/docker/test)"
       - name: Run test with cfg
-        run: 'echo ''{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ steps.images.outputs.images }} }'' | ./etc/docker/test/run_tests.py'
+        run: 'echo ''{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ steps.images.outputs.images }} }'' | ./tools/test/run_tests.py'
   test:
     needs: setup
     runs-on: ubuntu-latest
@@ -74,8 +72,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build images
         id: images
-        run: |
-          cd ./etc/docker/test
-          echo "::set-output name=images::$(echo '${{ toJson(matrix.cfg) }}' | ./build_images.py)"
+        run: echo "::set-output name=images::$(echo '${{ toJson(matrix.cfg) }}' | ./tools/test/build_images.py ./etc/docker/test)"
       - name: Run test with cfg
-        run: 'echo ''{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ steps.images.outputs.images }} }'' | ./etc/docker/test/run_tests.py'
+        run: 'echo ''{"matrix": ${{ toJson(matrix.cfg) }}, "images": ${{ steps.images.outputs.images }} }'' | ./tools/test/run_tests.py'
