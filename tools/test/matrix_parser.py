@@ -42,7 +42,7 @@ def readobj(key: str, val: typing.Dict, exclude: typing.List, whitelist: typing.
     if "blacklist" in val:
         # blacklist is an object that contains one or more entries per entry.
         # the entries are matched against the matrix
-        new_exclude_dict = {mapping.get(key, key): itemid, **extract_mapped_list(val["blacklist"])}
+        new_exclude_dict = {mapping.get(key, key): [itemid], **extract_mapped_list(val["blacklist"])}
         for blkey, v in new_exclude_dict.items():
             for vi in v[1:]:
                 exclude.append({**new_exclude_dict, blkey: vi})
