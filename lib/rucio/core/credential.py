@@ -21,21 +21,30 @@
 
 import base64
 import datetime
-import hmac
 import time
+import hmac
 from hashlib import sha1
-from urllib.parse import urlparse, urlencode
 
-import boto3
-from botocore.client import Config
-from dogpile.cache import make_region
-from dogpile.cache.api import NO_VALUE
-from oauth2client.service_account import ServiceAccountCredentials
 from six import integer_types
+try:
+    # Python 2
+    from urlparse import urlparse
+    from urllib import urlencode
+except ImportError:
+    # Python 3
+    from urllib.parse import urlparse, urlencode
 
 from rucio.common.config import config_get, get_rse_credentials
 from rucio.common.exception import UnsupportedOperation
 from rucio.core.monitor import record_timer_block
+
+from oauth2client.service_account import ServiceAccountCredentials
+
+import boto3
+from botocore.client import Config
+
+from dogpile.cache import make_region
+from dogpile.cache.api import NO_VALUE
 
 CREDS_GCS = None
 
