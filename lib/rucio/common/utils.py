@@ -259,7 +259,13 @@ def all_oidc_req_claims_present(scope, audience, required_scope, required_audien
 
 
 def generate_uuid():
-    return str(uuid()).replace('-', '').lower()
+    # add second mode with return of only e-notations like '8e709763901742258842354556715071'
+    generated = str(uuid()).replace('-', '').lower()
+    try:
+        float(generated)
+        return 'ff' + generated[2:]
+    except ValueError:
+        return generated
 
 
 def generate_uuid_bytes():

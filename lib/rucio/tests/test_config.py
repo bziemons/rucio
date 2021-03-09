@@ -40,6 +40,17 @@ class TestConfigCore:
         for section in expected_sections:
             assert section in sections
 
+    @pytest.mark.xfail
+    def test_set_and_get_e_number_as_string(self):
+        """ CONFIG (CORE): Special case where a uuid being a number in e-notation """
+        # get and set
+        section = str(generate_uuid())
+        option = str(generate_uuid())
+        expected_value = '8e709763901742258842354556715071'
+        config_core.set(section=section, option=option, value=expected_value)
+        value = config_core.get(section, option, use_cache=False)
+        assert value == expected_value
+
     def test_get_and_set_section_option(self):
         """ CONFIG (CORE): Retreive configuration option only """
         # get and set
