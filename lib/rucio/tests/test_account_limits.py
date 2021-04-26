@@ -30,13 +30,14 @@ import pytest
 
 from rucio.client.accountclient import AccountClient
 from rucio.client.accountlimitclient import AccountLimitClient
-from rucio.common.config import config_get, config_get_bool
+from rucio.common.config import config_get_bool
 from rucio.common.types import InternalAccount
 from rucio.core import account_limit
 from rucio.core.account import add_account
 from rucio.core.rse import get_rse_id
 from rucio.db.sqla import session, models
 from rucio.db.sqla.constants import AccountType
+from rucio.tests.common_server import get_vo
 
 
 @pytest.mark.dirty
@@ -46,7 +47,7 @@ class TestCoreAccountLimits(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            cls.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            cls.vo = {'vo': get_vo()}
             cls.multi_vo = True
         else:
             cls.vo = {}
@@ -144,7 +145,7 @@ class TestAccountClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            cls.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            cls.vo = {'vo': get_vo()}
             cls.multi_vo = True
         else:
             cls.vo = {}

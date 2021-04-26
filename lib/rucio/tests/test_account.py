@@ -42,12 +42,13 @@ from rucio.core.account import list_identities, add_account_attribute, list_acco
 from rucio.core.identity import add_account_identity, add_identity
 from rucio.db.sqla.constants import AccountStatus, IdentityType
 from rucio.tests.common import account_name_generator, headers, auth, vohdr, loginhdr
+from rucio.tests.common_server import get_vo
 
 
 class TestAccountCoreApi(unittest.TestCase):
     def setUp(self):
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            self.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            self.vo = {'vo': get_vo()}
         else:
             self.vo = {}
 

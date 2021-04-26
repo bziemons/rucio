@@ -29,7 +29,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from rucio.common.config import config_get, config_get_bool
+from rucio.common.config import config_get_bool
 from rucio.common.exception import RuleNotFound
 from rucio.common.types import InternalAccount, InternalScope
 from rucio.common.utils import generate_uuid as uuid
@@ -42,6 +42,7 @@ from rucio.daemons.judge.injector import rule_injector
 from rucio.db.sqla.constants import DIDType, RuleState
 from rucio.db.sqla.models import ReplicationRule
 from rucio.db.sqla.session import transactional_session
+from rucio.tests.common_server import get_vo
 from rucio.tests.test_rule import create_files, tag_generator
 
 
@@ -51,7 +52,7 @@ class TestJudgeEvaluator(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            cls.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            cls.vo = {'vo': get_vo()}
         else:
             cls.vo = {}
 

@@ -27,7 +27,7 @@ from datetime import datetime
 
 import pytest
 
-from rucio.common.config import config_get, config_get_bool
+from rucio.common.config import config_get_bool
 from rucio.common.exception import RuleNotFound, UnsupportedOperation
 from rucio.common.types import InternalAccount, InternalScope
 from rucio.common.utils import generate_uuid as uuid
@@ -39,6 +39,7 @@ from rucio.core.rule import add_rule, get_rule, delete_rule
 from rucio.daemons.bb8.common import rebalance_rule
 from rucio.daemons.judge.cleaner import rule_cleaner
 from rucio.db.sqla.constants import DIDType, RuleState
+from rucio.tests.common_server import get_vo
 from rucio.tests.test_rule import create_files, tag_generator
 
 
@@ -48,7 +49,7 @@ class TestJudgeCleaner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            cls.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            cls.vo = {'vo': get_vo()}
         else:
             cls.vo = {}
 

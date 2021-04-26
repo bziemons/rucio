@@ -39,7 +39,7 @@ import pytest
 from rucio.client.replicaclient import ReplicaClient
 from rucio.client.rseclient import RSEClient
 from rucio.common import exception
-from rucio.common.config import config_get, config_get_bool
+from rucio.common.config import config_get_bool
 from rucio.common.exception import (Duplicate, RSENotFound, RSEProtocolNotSupported,
                                     InvalidObject, ResourceTemporaryUnavailable,
                                     RSEAttributeNotFound, RSEOperationNotSupported)
@@ -53,13 +53,14 @@ from rucio.db.sqla import session, models
 from rucio.db.sqla.constants import RSEType
 from rucio.rse import rsemanager as mgr
 from rucio.tests.common import rse_name_generator, hdrdict, auth, headers
+from rucio.tests.common_server import get_vo
 
 
 class TestRSECoreApi(unittest.TestCase):
 
     def setUp(self):
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            self.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            self.vo = {'vo': get_vo()}
         else:
             self.vo = {}
 
@@ -364,7 +365,7 @@ class TestRSEClient(unittest.TestCase):
 
     def setUp(self):
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            self.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            self.vo = {'vo': get_vo()}
         else:
             self.vo = {}
 

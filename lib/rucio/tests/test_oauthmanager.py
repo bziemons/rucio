@@ -30,12 +30,13 @@ from sqlalchemy import and_, or_
 from sqlalchemy.sql.expression import true
 
 from rucio.api.account import add_account, del_account
-from rucio.common.config import config_get, config_get_bool
+from rucio.common.config import config_get_bool
 from rucio.common.exception import Duplicate
 from rucio.common.types import InternalAccount
 from rucio.daemons.oauthmanager.oauthmanager import run, stop
 from rucio.db.sqla import models
 from rucio.db.sqla.session import get_session
+from rucio.tests.common_server import get_vo
 
 new_token_dict = {'access_token': '',
                   'expires_in': 3599,
@@ -185,7 +186,7 @@ class TestOAuthManager(unittest.TestCase):
 
     def setUp(self):
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            self.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            self.vo = {'vo': get_vo()}
         else:
             self.vo = {}
 

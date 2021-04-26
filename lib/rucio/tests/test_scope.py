@@ -31,19 +31,20 @@ import pytest
 
 from rucio.client.accountclient import AccountClient
 from rucio.client.scopeclient import ScopeClient
-from rucio.common.config import config_get, config_get_bool
+from rucio.common.config import config_get_bool
 from rucio.common.exception import AccountNotFound, Duplicate, ScopeNotFound, InvalidObject
 from rucio.common.types import InternalAccount, InternalScope
 from rucio.common.utils import generate_uuid as uuid
 from rucio.core.scope import get_scopes, add_scope, is_scope_owner
 from rucio.tests.common import account_name_generator, scope_name_generator, headers, auth, hdrdict
+from rucio.tests.common_server import get_vo
 
 
 class TestScopeCoreApi(unittest.TestCase):
 
     def setUp(self):
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            self.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            self.vo = {'vo': get_vo()}
         else:
             self.vo = {}
 

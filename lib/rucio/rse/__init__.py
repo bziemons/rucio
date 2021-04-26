@@ -93,10 +93,15 @@ if rsemanager.CLIENT_MODE:   # pylint:disable=no-member
 
 if rsemanager.SERVER_MODE:   # pylint:disable=no-member
     from rucio.core.rse import get_rse_protocols, get_rse_id
+    from rucio.core.vo import map_vo
 
     def tmp_rse_info(rse=None, vo='def', rse_id=None, session=None):
         if rse_id is None:
-            rse_id = get_rse_id(rse=rse, vo=vo)
+            # This can be called directly by client tools if they're co-located on a server
+            # i.e. running rucio cli on a server and during the test suite.
+            # We have to map to VO name here for this situations, despite this nominally
+            # not being a client interface.
+            rse_id = get_rse_id(rse=rse, vo=map_vo(vo))
         return get_rse_protocols(rse_id=rse_id, session=session)
 
     setattr(rsemanager, '__request_rse_info', tmp_rse_info)

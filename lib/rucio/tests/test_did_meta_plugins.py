@@ -22,7 +22,7 @@ import unittest
 import pytest
 
 from rucio.client.didclient import DIDClient
-from rucio.common.config import config_get, config_get_bool
+from rucio.common.config import config_get_bool
 from rucio.common.exception import KeyNotFound
 from rucio.common.types import InternalAccount, InternalScope
 from rucio.common.utils import generate_uuid
@@ -30,6 +30,7 @@ from rucio.core.did import add_did, delete_dids, set_metadata_bulk
 from rucio.core.did_meta_plugins import list_dids, get_metadata, set_metadata
 from rucio.db.sqla.session import get_session
 from rucio.db.sqla.util import json_implemented
+from rucio.tests.common_server import get_vo
 
 
 def skip_without_json():
@@ -41,7 +42,7 @@ class TestDidMetaDidColumn(unittest.TestCase):
 
     def setUp(self):
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            self.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            self.vo = {'vo': get_vo()}
         else:
             self.vo = {}
         self.tmp_scope = InternalScope('mock', **self.vo)
@@ -124,7 +125,7 @@ class TestDidMetaJSON(unittest.TestCase):
     def setUp(self):
         self.session = get_session()
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            self.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            self.vo = {'vo': get_vo()}
         else:
             self.vo = {}
         self.tmp_scope = InternalScope('mock', **self.vo)

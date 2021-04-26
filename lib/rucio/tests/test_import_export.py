@@ -31,7 +31,7 @@ import pytest
 
 from rucio.client.exportclient import ExportClient
 from rucio.client.importclient import ImportClient
-from rucio.common.config import config_set, config_add_section, config_has_section, config_get, config_get_bool
+from rucio.common.config import config_set, config_add_section, config_has_section, config_get_bool
 from rucio.common.exception import RSENotFound
 from rucio.common.types import InternalAccount
 from rucio.common.utils import render_json, parse_response
@@ -46,6 +46,7 @@ from rucio.core.rse import get_rse_id, get_rse_name, add_rse, get_rse, add_proto
 from rucio.db.sqla import session, models
 from rucio.db.sqla.constants import RSEType, AccountType, IdentityType, AccountStatus
 from rucio.tests.common import rse_name_generator, headers, auth, hdrdict
+from rucio.tests.common_server import get_vo
 
 
 def check_rse(rse_name, test_data, vo='def'):
@@ -475,7 +476,7 @@ class TestImporterSyncModes(unittest.TestCase):
     def setUp(self):
         # Since test config scenarios are complicated moved the setup inside the individual tests
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            self.vo = {'vo': config_get('client', 'vo', raise_exception=False, default='tst')}
+            self.vo = {'vo': get_vo()}
         else:
             self.vo = {}
 

@@ -33,7 +33,7 @@ import unittest
 import pytest
 
 from rucio.common.config import config_get, config_get_bool
-from rucio.tests.common import account_name_generator, rse_name_generator, execute
+from rucio.tests.common import account_name_generator, rse_name_generator, execute, get_long_vo
 
 
 class TestCurlRucio(unittest.TestCase):
@@ -43,7 +43,7 @@ class TestCurlRucio(unittest.TestCase):
 
     def setUp(self):
         if config_get_bool('common', 'multi_vo', raise_exception=False, default=False):
-            self.vo_header = '-H "X-Rucio-VO: %s"' % config_get('client', 'vo', raise_exception=False, default='tst')
+            self.vo_header = '-H "X-Rucio-VO: %s"' % get_long_vo()
         else:
             self.vo_header = ''
 
