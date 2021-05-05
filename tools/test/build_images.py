@@ -58,7 +58,12 @@ def build_images(matrix, script_args):
                                           filtered_buildargs.items()))
             if buildargs_tags:
                 buildargs_tags = '-' + buildargs_tags
-            imagetag = f'rucio-{buildargs.IMAGE_IDENTIFIER}:{dist.lower()}{buildargs_tags}'
+            image_identifier = buildargs.IMAGE_IDENTIFIER
+            if script_args.branch:
+                branch = str(script_args.branch).lstrip('refs/heads/')
+                if branch != 'master':
+                    image_identifier += '-' + branch.lstrip('release-')
+            imagetag = f'rucio-{image_identifier}:{dist.lower()}{buildargs_tags}'
             if script_args.cache_repo:
                 imagetag = script_args.cache_repo.lower() + '/' + imagetag
             cache_args = ()
@@ -112,6 +117,8 @@ def main():
                         help='use the following cache repository, like docker.pkg.github.com/USER/REPO')
     parser.add_argument('-p', '--push-cache', dest='push_cache', action='store_true',
                         help='push the images to the cache repo')
+    parser.add_argument('-b', '--branch', dest='branch', type=str, default='master',
+                        help='the branch used to build the images from (used for the image name)')
     script_args = parser.parse_args()
 
     images = build_images(matrix, script_args)

@@ -6,10 +6,25 @@ on:
     - cron: '0 3 * * 1-5'
 
 jobs:
-  build_autotests:
+  setup:
     runs-on: ubuntu-latest
     steps:
+      - name: Identify branches
+        id: branches
+        run: echo "::set-output name=branches::$(echo "${{ github.event.repository.branches_url }}" | ./tools/github/workflow/grabrelease.py --all --json --add master)"
+    outputs:
+      branches: ${{ steps.branches.outputs.branches }}
+  build_autotests:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+    strategy:
+      matrix:
+        branch: ${{ fromJson(needs.setup.outputs.branches) }}
+    steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.branch }}
       - name: Update pip
         run: python3 -m pip install -U pip setuptools
       - name: Install python requirements for matrix_parser.py
@@ -25,7 +40,7 @@ jobs:
           i=0; until [ "$i" -ge 3 ]; do
             IMAGES=$(echo '${{ steps.matrix.outputs.matrix }}' | ./tools/test/build_images.py --output list \
                 --build-no-cache --cache-repo docker.pkg.github.com/${{ github.repository }} --push-cache \
-                ./etc/docker/test || echo "")
+                --branch "${{ matrix.branch }}" ./etc/docker/test || echo "")
             if [[ -n $IMAGES ]]; then break;
             else
               i=$((i+1)); sleep 5;
@@ -36,6 +51,11 @@ jobs:
           if [[ -z $IMAGES ]]; then echo "::error::Building images failed ultimately"; exit 1; fi
   build_integration_tests:
     runs-on: ubuntu-latest
+    needs:
+      - setup
+    strategy:
+      matrix:
+        branch: ${{ fromJson(needs.setup.outputs.branches) }}
     steps:
       - name: Checkout rucio containers repository
         uses: actions/checkout@v2
@@ -60,7 +80,7 @@ jobs:
           i=0; until [ "$i" -ge 3 ]; do
             IMAGES=$(echo '${{ steps.matrix.outputs.matrix }}' | ${{ github.workspace }}/dev/rucio/tools/test/build_images.py --output list \
                 --build-no-cache --cache-repo docker.pkg.github.com/${{ github.repository }} --push-cache \
-                ${{ github.workspace }}/dev || echo "")
+                --branch "${{ matrix.branch }}" ${{ github.workspace }}/dev || echo "")
             if [[ -n $IMAGES ]]; then break;
             else
               i=$((i+1)); sleep 5;
