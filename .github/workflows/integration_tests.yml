@@ -34,7 +34,8 @@ jobs:
       - name: Checkout rucio containers repository
         uses: actions/checkout@v2
         with:
-          repository: rucio/containers
+          repository: bziemons/rucio-containers
+          ref: feature-add_mariadb_connector_c
       - uses: actions/checkout@v2
         name: Checkout rucio source
         with:
