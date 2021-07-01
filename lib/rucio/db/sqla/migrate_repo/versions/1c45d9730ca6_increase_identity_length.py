@@ -1,4 +1,5 @@
-# Copyright 2017-2021
+# -*- coding: utf-8 -*-
+# Copyright 2017-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +17,7 @@
 # - Martin Barisits <martin.barisits@cern.ch>, 2017
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2017-2021
 # - Robert Illingworth <illingwo@fnal.gov>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' increase identity length '''
 
@@ -52,7 +54,7 @@ def upgrade():
                                 table_name='account_map',
                                 condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH')")
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         alter_column('tokens', 'identity', existing_type=sa.String(255), type_=sa.String(2048), schema=schema[:-1])
 
         # MySQL does not allow altering a column referenced by a ForeignKey
@@ -62,11 +64,11 @@ def upgrade():
         alter_column('account_map', 'identity', existing_type=sa.String(255), type_=sa.String(2048), nullable=False, schema=schema[:-1])
         create_foreign_key('ACCOUNT_MAP_ID_TYPE_FK', 'account_map', 'identities', ['identity', 'identity_type'], ['identity', 'identity_type'])
 
-        op.execute('ALTER TABLE ' + schema + 'identities DROP CHECK IDENTITIES_TYPE_CHK')  # pylint: disable=no-member
+        drop_constraint('IDENTITIES_TYPE_CHK', 'identities', type_='check')
         create_check_constraint(constraint_name='IDENTITIES_TYPE_CHK',
                                 table_name='identities',
                                 condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH')")
-        op.execute('ALTER TABLE ' + schema + 'account_map DROP CHECK ACCOUNT_MAP_ID_TYPE_CHK')  # pylint: disable=no-member
+        drop_constraint('ACCOUNT_MAP_ID_TYPE_CHK', 'account_map', type_='check')
         create_check_constraint(constraint_name='ACCOUNT_MAP_ID_TYPE_CHK',
                                 table_name='account_map',
                                 condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH')")
@@ -121,16 +123,16 @@ def downgrade():
         alter_column('account_map', 'identity', existing_type=sa.String(2048), type_=sa.String(255), schema=schema[:-1])
         alter_column('identities', 'identity', existing_type=sa.String(2048), type_=sa.String(255), schema=schema[:-1])
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         execute("DELETE FROM " + schema + "account_map WHERE identity_type='SSH'")  # pylint: disable=no-member
         execute("DELETE FROM " + schema + "identities WHERE identity_type='SSH'")  # pylint: disable=no-member
 
-        op.execute('ALTER TABLE ' + schema + 'identities DROP CHECK IDENTITIES_TYPE_CHK')  # pylint: disable=no-member
+        drop_constraint('IDENTITIES_TYPE_CHK', 'identities', type_='check')
         create_check_constraint(constraint_name='IDENTITIES_TYPE_CHK',
                                 table_name='identities',
                                 condition="identity_type in ('X509', 'GSS', 'USERPASS')")
 
-        op.execute('ALTER TABLE ' + schema + 'account_map DROP CHECK ACCOUNT_MAP_ID_TYPE_CHK')  # pylint: disable=no-member
+        drop_constraint('ACCOUNT_MAP_ID_TYPE_CHK', 'account_map', type_='check')
         create_check_constraint(constraint_name='ACCOUNT_MAP_ID_TYPE_CHK',
                                 table_name='account_map',
                                 condition="identity_type in ('X509', 'GSS', 'USERPASS')")

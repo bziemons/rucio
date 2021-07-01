@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2020 CERN
+# Copyright 2015-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 # - Martin Barisits <martin.barisits@cern.ch>, 2016
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019-2020
 # - James Perry <j.perry@epcc.ed.ac.uk>, 2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' add convention table and closed_at to dids '''
 
@@ -43,7 +44,7 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         add_column('dids', sa.Column('closed_at', sa.DateTime), schema=schema)
         add_column('contents_history', sa.Column('deleted_at', sa.DateTime), schema=schema)
@@ -67,7 +68,7 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         drop_column('dids', 'closed_at', schema=schema)
         drop_column('contents_history', 'deleted_at', schema=schema)

@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2018-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +16,7 @@
 # Authors:
 # - Cedric Serfon <cedric.serfon@cern.ch>, 2018
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' add bytes column to bad_replicas '''
 
@@ -34,7 +36,7 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         add_column('bad_replicas', sa.Column('bytes', sa.BigInteger), schema=schema)
 
@@ -44,6 +46,6 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         drop_column('bad_replicas', 'bytes', schema=schema)

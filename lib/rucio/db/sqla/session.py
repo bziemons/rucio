@@ -187,7 +187,7 @@ def get_engine(echo=True):
             except:
                 pass
         _ENGINE = create_engine(sql_connection, **params)
-        if 'mysql' in sql_connection:
+        if 'mysql' in sql_connection or 'mariadb' in sql_connection:
             event.listen(_ENGINE, 'checkout', mysql_ping_listener)
         elif 'postgresql' in sql_connection:
             event.listen(_ENGINE, 'connect', psql_convert_decimal_to_float)

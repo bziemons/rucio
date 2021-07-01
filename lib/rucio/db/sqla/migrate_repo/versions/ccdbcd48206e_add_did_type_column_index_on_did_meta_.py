@@ -1,4 +1,5 @@
-# Copyright 2013-2020 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,7 @@
 #
 # Authors:
 # - Cedric Serfon <cedric.serfon@cern.ch>, 2021
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' Add did_type column + index on did_meta table '''
 
@@ -38,7 +40,7 @@ def upgrade():
     '''
 
     schema = get_context().version_table_schema + '.' if get_context().version_table_schema else ''
-    if get_context().dialect.name in ['oracle', 'mysql']:
+    if get_context().dialect.name in ['oracle', 'mysql', 'mariadb']:
         add_column('did_meta',
                    sa.Column('did_type', sa.Enum(DIDType, name='DID_META_DID_TYPE_CHK', values_callable=lambda obj: [e.value for e in obj])),
                    schema=schema[:-1])
@@ -64,5 +66,5 @@ def downgrade():
         execute('ALTER TABLE %sdid_meta DROP COLUMN did_type' % schema)
         execute('DROP TYPE \"DID_META_DID_TYPE_CHK\"')
 
-    elif get_context().dialect.name == 'mysql':
+    elif get_context().dialect.name in ['mysql', 'mariadb']:
         drop_column('did_meta', 'did_type', schema=schema[:-1])

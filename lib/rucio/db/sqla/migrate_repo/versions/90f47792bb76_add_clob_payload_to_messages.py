@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2019-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,7 @@
 #
 # Authors:
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' add clob payload to messages '''
 
@@ -33,7 +35,7 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         add_column('messages', sa.Column('payload_nolimit', sa.Text), schema=schema)
         add_column('messages_history', sa.Column('payload_nolimit', sa.Text), schema=schema)
@@ -44,7 +46,7 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         drop_column('messages', 'payload_nolimit', schema=schema)
         drop_column('messages_history', 'payload_nolimit', schema=schema)

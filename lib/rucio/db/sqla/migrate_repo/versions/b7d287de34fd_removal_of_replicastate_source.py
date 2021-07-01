@@ -15,7 +15,8 @@
 #
 # Authors:
 # - Martin Barisits <martin.barisits@cern.ch>, 2019
-# - Mario Lassnig <mario.lassnig@cern.ch>, 2019-2020
+# - Mario Lassnig <mario.lassnig@cern.ch>, 2019-2021
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' Removal of ReplicaState.SOURCE '''
 
@@ -55,8 +56,8 @@ def upgrade():
         op.execute("CREATE TYPE \"COLLECTION_REPLICAS_STATE_CHK\" AS ENUM('A', 'U', 'C', 'B', 'D', 'T')")
         op.execute("ALTER TABLE %scollection_replicas ALTER COLUMN state TYPE \"COLLECTION_REPLICAS_STATE_CHK\" USING state::\"COLLECTION_REPLICAS_STATE_CHK\"" % schema)
 
-    elif context.get_context().dialect.name == 'mysql':
-        op.execute('ALTER TABLE ' + schema + 'replicas DROP CHECK REPLICAS_STATE_CHK')  # pylint: disable=no-member
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
+        op.drop_constraint('REPLICAS_STATE_CHK', 'replicas', type_='check')
         create_check_constraint(constraint_name='REPLICAS_STATE_CHK', table_name='replicas',
                                 condition="state in ('A', 'U', 'C', 'B', 'D', 'T')")
         create_check_constraint(constraint_name='COLLECTION_REPLICAS_STATE_CHK', table_name='collection_replicas',
@@ -89,7 +90,7 @@ def downgrade():
         op.execute("CREATE TYPE \"COLLECTION_REPLICAS_STATE_CHK\" AS ENUM('A', 'U', 'C', 'B', 'D', 'S', 'T')")
         op.execute("ALTER TABLE %scollection_replicas ALTER COLUMN state TYPE \"COLLECTION_REPLICAS_STATE_CHK\" USING state::\"COLLECTION_REPLICAS_STATE_CHK\"" % schema)
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         create_check_constraint(constraint_name='REPLICAS_STATE_CHK', table_name='replicas',
                                 condition="state in ('A', 'U', 'C', 'B', 'D', 'S', 'T')")
         create_check_constraint(constraint_name='COLLECTION_REPLICAS_STATE_CHK', table_name='collection_replicas',

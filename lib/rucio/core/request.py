@@ -1013,7 +1013,7 @@ def release_waiting_requests_per_free_volume(rse_id, volume=None, session=None):
 
     dialect = session.bind.dialect.name
     sum_volume_active_subquery = None
-    if dialect == 'mysql' or dialect == 'sqlite':
+    if dialect == 'mysql' or dialect == 'mariadb' or dialect == 'sqlite':
         sum_volume_active_subquery = session.query(func.ifnull(func.sum(models.Request.bytes), 0).label('sum_bytes'))\
                                             .filter(and_(or_(models.Request.state == RequestState.SUBMITTED, models.Request.state == RequestState.QUEUED),
                                                          models.Request.dest_rse_id == rse_id))
@@ -1066,7 +1066,7 @@ def create_base_query_grouped_fifo(rse_id, filter_by_rse='destination', session=
     filtered_requests_subquery = None
     grouped_requests_subquery = None
     dialect = session.bind.dialect.name
-    if dialect == 'mysql' or dialect == 'sqlite':
+    if dialect == 'mysql' or dialect == 'mariadb' or dialect == 'sqlite':
         filtered_requests_subquery = session.query(models.Request.id.label('id'),
                                                    func.ifnull(attachment_order_subquery.c.name, models.Request.name).label('dataset_name'),
                                                    func.ifnull(attachment_order_subquery.c.scope, models.Request.scope).label('dataset_scope'))
@@ -1140,7 +1140,7 @@ def release_waiting_requests_fifo(rse_id, activity=None, count=None, account=Non
 
     dialect = session.bind.dialect.name
     rowcount = 0
-    if dialect == 'mysql':
+    if dialect == 'mysql' or dialect == 'mariadb':
         subquery = session.query(models.Request.id)\
                           .filter(models.Request.state == RequestState.WAITING)\
                           .order_by(asc(models.Request.requested_at))

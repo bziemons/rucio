@@ -100,6 +100,7 @@ server_requirements_table = {
     'oracle': ['cx_oracle'],
     'postgresql': ['psycopg2-binary'],
     'mysql': ['PyMySQL'],
+    'mariadb': ['mariadb'],
     'kerberos': [
         'kerberos',
         'pykerberos',

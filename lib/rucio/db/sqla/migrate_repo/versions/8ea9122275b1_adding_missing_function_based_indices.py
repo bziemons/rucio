@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 CERN
+# Copyright 2020-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 #
 # Authors:
 # - Martin Barisits <martin.barisits@cern.ch>, 2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' Adding missing function based indices '''
 
@@ -42,7 +43,7 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['mysql']:
+    if context.get_context().dialect.name in ['mysql', 'mariadb']:
         drop_constraint('BAD_REPLICAS_ACCOUNT_FK', 'bad_replicas', type_='foreignkey')
         drop_constraint('REQUESTS_RSES_FK', 'requests', type_='foreignkey')
 
@@ -52,6 +53,6 @@ def downgrade():
     drop_index('BAD_REPLICAS_ACCOUNT_IDX', 'bad_replicas')
     drop_index('REQUESTS_DEST_RSE_ID_IDX', 'requests')
 
-    if context.get_context().dialect.name in ['mysql']:
+    if context.get_context().dialect.name in ['mysql', 'mariadb']:
         create_foreign_key('BAD_REPLICAS_ACCOUNT_FK', 'bad_replicas', 'accounts', ['account'], ['account'])
         create_foreign_key('REQUESTS_RSES_FK', 'requests', 'rses', ['dest_rse_id'], ['id'])

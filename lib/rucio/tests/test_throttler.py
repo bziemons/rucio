@@ -72,7 +72,6 @@ class TestThrottlerGroupedFIFO(unittest.TestCase):
 
     def setUp(self):
         self.db_session = session.get_session()
-        self.dialect = self.db_session.bind.dialect.name
         self.db_session.query(models.Request).delete()
         self.db_session.query(models.RSETransferLimit).delete()
         self.db_session.commit()
@@ -445,7 +444,6 @@ class TestThrottlerFIFO(unittest.TestCase):
 
     def setUp(self):
         self.db_session = session.get_session()
-        self.dialect = self.db_session.bind.dialect.name
         self.db_session.query(models.Request).delete()
         self.db_session.query(models.RSETransferLimit).delete()
         self.db_session.commit()
@@ -460,8 +458,6 @@ class TestThrottlerFIFO(unittest.TestCase):
 
     def test_throttler_fifo_release_all(self):
         """ THROTTLER (CLIENTS): throttler release all waiting requests (DEST - ACT - FIFO). """
-        if self.dialect == 'mysql':
-            return True
         # no threshold -> release all waiting requests
         set_rse_transfer_limits(self.dest_rse_id, max_transfers=1, activity=self.all_activities, strategy='fifo', session=self.db_session)
         name1 = generate_uuid()
@@ -552,9 +548,6 @@ class TestThrottlerFIFO(unittest.TestCase):
 
     def test_throttler_fifo_release_nothing(self):
         """ THROTTLER (CLIENTS): throttler release nothing (DEST - ACT - FIFO). """
-        if self.dialect == 'mysql':
-            return True
-
         # two waiting requests and one active requests but threshold is 1
         # more than 80% of the transfer limit are already used -> release nothing
         set_rse_transfer_limits(self.dest_rse_id, max_transfers=1, activity=self.user_activity, strategy='fifo', session=self.db_session)
@@ -612,9 +605,6 @@ class TestThrottlerFIFO(unittest.TestCase):
 
     def test_throttler_fifo_release_subset(self):
         """ THROTTLER (CLIENTS): throttler release subset of waiting requests (DEST - ACT - FIFO). """
-        if self.dialect == 'mysql':
-            return True
-
         # two waiting requests and no active requests but threshold is 1 -> release only 1 request
         set_rse_transfer_limits(self.dest_rse_id, activity=self.user_activity, max_transfers=1, strategy='fifo', session=self.db_session)
         name1 = generate_uuid()
@@ -703,7 +693,6 @@ class TestThrottlerFIFOSRCACT(unittest.TestCase):
 
     def setUp(self):
         self.db_session = session.get_session()
-        self.dialect = self.db_session.bind.dialect.name
         self.db_session.query(models.Request).delete()
         self.db_session.query(models.RSETransferLimit).delete()
         self.db_session.commit()
@@ -718,9 +707,6 @@ class TestThrottlerFIFOSRCACT(unittest.TestCase):
 
     def test_throttler_fifo_release_subset(self):
         """ THROTTLER (CLIENTS): throttler release subset of waiting requests (SRC - ACT - FIFO). """
-        if self.dialect == 'mysql':
-            return True
-
         # two waiting requests and no active requests but threshold is 1 for one activity
         # one waiting request and no active requests but threshold is 0 for other activity -> release only 1 request for one activity
         set_rse_transfer_limits(self.source_rse_id, activity=self.user_activity, max_transfers=1, strategy='fifo', session=self.db_session)
@@ -827,7 +813,6 @@ class TestThrottlerFIFOSRCALLACT(unittest.TestCase):
 
     def setUp(self):
         self.db_session = session.get_session()
-        self.dialect = self.db_session.bind.dialect.name
         self.db_session.query(models.Request).delete()
         self.db_session.query(models.RSETransferLimit).delete()
         self.db_session.commit()
@@ -842,9 +827,6 @@ class TestThrottlerFIFOSRCALLACT(unittest.TestCase):
 
     def test_throttler_fifo_release_subset(self):
         """ THROTTLER (CLIENTS): throttler release subset of waiting requests (SRC - ALL ACT - FIFO). """
-        if self.dialect == 'mysql':
-            return True
-
         # two waiting requests and no active requests but threshold is 1 -> release only 1 request
         set_rse_transfer_limits(self.source_rse_id, activity=self.all_activities, max_transfers=1, strategy='fifo', session=self.db_session)
         name1 = generate_uuid()
@@ -933,7 +915,6 @@ class TestThrottlerFIFODESTALLACT(unittest.TestCase):
 
     def setUp(self):
         self.db_session = session.get_session()
-        self.dialect = self.db_session.bind.dialect.name
         self.db_session.query(models.Request).delete()
         self.db_session.query(models.RSETransferLimit).delete()
         self.db_session.commit()
@@ -948,9 +929,6 @@ class TestThrottlerFIFODESTALLACT(unittest.TestCase):
 
     def test_throttler_fifo_release_subset(self):
         """ THROTTLER (CLIENTS): throttler release subset of waiting requests (DEST - ALL ACT - FIFO). """
-        if self.dialect == 'mysql':
-            return True
-
         # two waiting requests and no active requests but threshold 1 for one dest RSE
         # one waiting request and no active requests but threshold 0 for another dest RSE -> release only 1 request on one dest RSE
         set_rse_transfer_limits(self.dest_rse_id, activity=self.all_activities, max_transfers=1, strategy='fifo', session=self.db_session)
@@ -1061,7 +1039,6 @@ class TestThrottlerGroupedFIFOSRCALLACT(unittest.TestCase):
 
     def setUp(self):
         self.db_session = session.get_session()
-        self.dialect = self.db_session.bind.dialect.name
         self.db_session.query(models.Request).delete()
         self.db_session.query(models.RSETransferLimit).delete()
         self.db_session.commit()
@@ -1077,9 +1054,6 @@ class TestThrottlerGroupedFIFOSRCALLACT(unittest.TestCase):
     @skiplimitedsql
     def test_preparer_throttler_grouped_fifo_subset(self):
         """ THROTTLER (CLIENTS): throttler release subset of waiting requests (SRC - ALL ACT - GFIFO). """
-        if self.dialect == 'mysql':
-            return True
-
         set_rse_transfer_limits(self.source_rse_id, self.all_activities, volume=10, max_transfers=1, deadline=0, strategy='grouped_fifo', session=self.db_session)
         name1 = generate_uuid()
         name2 = generate_uuid()
@@ -1224,7 +1198,6 @@ class TestRequestCoreRelease(unittest.TestCase):
 
     def setUp(self):
         self.db_session = session.get_session()
-        self.dialect = self.db_session.bind.dialect.name
         self.db_session.query(models.Request).delete()
         self.db_session.query(models.RSETransferLimit).delete()
         self.db_session.query(models.Distance).delete()

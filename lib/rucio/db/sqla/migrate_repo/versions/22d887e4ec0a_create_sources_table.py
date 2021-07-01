@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2015-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +15,9 @@
 #
 # Authors:
 # - Vincent Garonne <vincent.garonne@cern.ch>, 2015-2017
+# - Martin Barisits <martin.barisits@cern.ch>, 2016
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' create sources table '''
 
@@ -39,7 +42,7 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         create_table('sources',
                      sa.Column('request_id', GUID()),
                      sa.Column('scope', sa.String(25)),
@@ -67,5 +70,5 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         drop_table('sources')

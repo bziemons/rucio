@@ -1,4 +1,5 @@
-# Copyright 2013-2020 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2020-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,7 @@
 #
 # Authors:
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' add qos class to rse '''
 
@@ -34,7 +36,7 @@ def upgrade():
 
     schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
 
-    if context.get_context().dialect.name in ['oracle', 'postgresql', 'mysql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         add_column('rses', sa.Column('qos_class', sa.String(64)), schema=schema[:-1])
 
 
@@ -45,5 +47,5 @@ def downgrade():
 
     schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
 
-    if context.get_context().dialect.name in ['oracle', 'postgresql', 'mysql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         drop_column('rses', 'qos_class', schema=schema[:-1])

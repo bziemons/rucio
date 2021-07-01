@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2017-2020 CERN
+# Copyright 2017-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 # - Martin Barisits <martin.barisits@cern.ch>, 2018-2019
 # - Hannes Hansen <hannes.jakob.hansen@cern.ch>, 2018-2019
 # - Andrew Lister <andrew.lister@stfc.ac.uk>, 2019
-# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020-2021
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2020
 
 from __future__ import division
@@ -126,7 +126,7 @@ def add_exception(dids, account, pattern, comments, expires_at, session=None):
         except IntegrityError as error:
             if match('.*ORA-00001.*', str(error.args[0])) \
                     or match('.*IntegrityError.*UNIQUE constraint failed.*', str(error.args[0])) \
-                    or match('.*1062.*Duplicate entry.*for key.*', str(error.args[0])) \
+                    or match('.*IntegrityError.*Duplicate entry.*for key.*', str(error.args[0])) \
                     or match('.*IntegrityError.*columns? .*not unique.*', error.args[0]):
                 raise LifetimeExceptionDuplicate()
             raise RucioException(error.args[0])

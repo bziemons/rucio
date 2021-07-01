@@ -41,6 +41,7 @@ boto3>=1.9.130,<1.17.0                                      # S3 boto protocol (
 cx_oracle==8.0.1                                            # oracle_extras
 psycopg2-binary==2.8.6                                      # postgresql_extras
 PyMySQL                                                     # mysql_extras
+mariadb~=1.0.7; python_version >= '3.6'                     # mariadb_extras
 PyYAML==5.4                                                 # globus_extras and used for reading test configuration files
 globus-sdk==1.8.0                                           # globus_extras
 python3-saml>=1.6.0                                         # saml_extras

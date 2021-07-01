@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2019-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,7 @@
 #
 # Authors:
 # - Martin Barisits <martin.barisits@cern.ch>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' New payload column for heartbeats '''
 
@@ -34,7 +36,7 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         drop_index('HEARTBEATS_UPDATED_AT', 'heartbeats')
         add_column('heartbeats', sa.Column('payload', String(3000)), schema=schema)
@@ -45,7 +47,7 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         create_index('HEARTBEATS_UPDATED_AT', 'heartbeats', ['updated_at'])
         drop_column('heartbeats', 'payload', schema=schema)

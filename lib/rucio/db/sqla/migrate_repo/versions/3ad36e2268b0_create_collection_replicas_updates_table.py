@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2020 CERN
+# Copyright 2015-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 # - Vincent Garonne <vincent.garonne@cern.ch>, 2015-2017
 # - Martin Barisits <martin.barisits@cern.ch>, 2016
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019-2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' create collection_replicas_updates table '''
 
@@ -43,7 +44,7 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         add_column('collection_replicas', sa.Column('available_replicas_cnt', sa.BigInteger()), schema=schema)
         add_column('collection_replicas', sa.Column('available_bytes', sa.BigInteger()), schema=schema)
@@ -76,7 +77,7 @@ def downgrade():
         drop_column('collection_replicas', 'available_bytes', schema=schema)
         drop_table('updated_col_rep')
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         drop_column('collection_replicas', 'available_replicas_cnt', schema=schema)
         drop_column('collection_replicas', 'available_bytes', schema=schema)
         drop_constraint('UPDATED_COL_REP_PK', 'updated_col_rep', type_='primary')

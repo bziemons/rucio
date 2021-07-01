@@ -39,6 +39,7 @@ suites:
     RDBMS:
       - oracle
       - mysql8
+      - mariadb10
       - postgres9
       - postgres12
       - sqlite

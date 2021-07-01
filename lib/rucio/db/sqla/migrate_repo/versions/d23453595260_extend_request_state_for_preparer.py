@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 CERN
+# Copyright 2020-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # Authors:
-# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020-2021
 
 """
 Add PREPARING state to Request model.
@@ -40,13 +40,14 @@ def upgrade():
     schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
     dialect = context.get_context().dialect.name
 
-    if dialect == 'oracle':
-        try_drop_constraint('REQUESTS_STATE_CHK', 'requests')
+    if dialect in ['oracle', 'mysql', 'mariadb']:
+        try_drop_constraint('REQUESTS_STATE_CHK', 'requests', type_='check')
         op.create_check_constraint(
             constraint_name='REQUESTS_STATE_CHK',
             table_name='requests',
             condition=f'state in ({enum_values_str(new_enum_values)})',
         )
+
     elif dialect == 'postgresql':
         op.execute('ALTER TABLE %srequests_history DROP CONSTRAINT IF EXISTS "REQUESTS_HISTORY_STATE_CHK", ALTER COLUMN state TYPE CHAR' % schema)
         op.execute('DROP TYPE "REQUESTS_HISTORY_STATE_CHK"')
@@ -56,16 +57,6 @@ def upgrade():
         op.execute('DROP TYPE "REQUESTS_STATE_CHK"')
         op.execute(f'CREATE TYPE "REQUESTS_STATE_CHK" AS ENUM({enum_values_str(new_enum_values)})')
         op.execute('ALTER TABLE %srequests ALTER COLUMN state TYPE "REQUESTS_STATE_CHK" USING state::"REQUESTS_STATE_CHK"' % schema)
-
-    elif dialect == 'mysql':
-        if context.get_context().dialect.server_version_info[0] == 8:
-            op.drop_constraint('REQUESTS_STATE_CHK', 'requests', type_='check')
-
-        op.create_check_constraint(
-            constraint_name='REQUESTS_STATE_CHK',
-            table_name='requests',
-            condition=f'state in ({enum_values_str(new_enum_values)})',
-        )
 
 
 def downgrade():
@@ -78,13 +69,14 @@ def downgrade():
     schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
     dialect = context.get_context().dialect.name
 
-    if dialect == 'oracle':
-        try_drop_constraint('REQUESTS_STATE_CHK', 'requests')
+    if dialect in ['oracle', 'mysql', 'mariadb']:
+        try_drop_constraint('REQUESTS_STATE_CHK', 'requests', type_='check')
         op.create_check_constraint(
             constraint_name='REQUESTS_STATE_CHK',
             table_name='requests',
             condition=f'state in ({enum_values_str(old_enum_values)})',
         )
+
     elif dialect == 'postgresql':
         op.execute('ALTER TABLE %srequests_history DROP CONSTRAINT IF EXISTS "REQUESTS_HISTORY_STATE_CHK", ALTER COLUMN state TYPE CHAR' % schema)
         op.execute(f'CREATE TYPE "REQUESTS_HISTORY_STATE_CHK" AS ENUM({enum_values_str(old_enum_values)})')
@@ -93,16 +85,6 @@ def downgrade():
         op.execute('DROP TYPE "REQUESTS_STATE_CHK"')
         op.execute(f'CREATE TYPE "REQUESTS_STATE_CHK" AS ENUM({enum_values_str(old_enum_values)})')
         op.execute('ALTER TABLE %srequests ALTER COLUMN state TYPE "REQUESTS_STATE_CHK" USING state::"REQUESTS_STATE_CHK"' % schema)
-
-    elif dialect == 'mysql':
-        op.create_check_constraint(
-            constraint_name='REQUESTS_STATE_CHK',
-            table_name='requests',
-            condition=f'state in ({enum_values_str(old_enum_values)})',
-        )
-
-        if context.get_context().dialect.server_version_info[0] == 8:
-            op.drop_constraint('REQUESTS_STATE_CHK', 'requests', type_='check')
 
 
 def enum_values_str(enumvals):

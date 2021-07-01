@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2015-2020 CERN
+# Copyright 2015-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 # - Vincent Garonne <vincent.garonne@cern.ch>, 2015-2017
 # - Martin Barisits <martin.barisits@cern.ch>, 2016
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019-2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' add notification column to rules '''
 
@@ -39,7 +40,7 @@ def upgrade():
 
     schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb']:
         add_column('rules', sa.Column('notification', sa.Enum(RuleNotification, name='RULES_NOTIFICATION_CHK',
                                                               values_callable=lambda obj: [e.value for e in obj]),
                                       default=RuleNotification.NO), schema=schema[:-1])
@@ -64,5 +65,5 @@ def downgrade():
         op.execute('ALTER TABLE %srules DROP COLUMN notification' % schema)
         op.execute('DROP TYPE \"RULES_NOTIFICATION_CHK\"')
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         drop_column('rules', 'notification', schema=schema[:-1])

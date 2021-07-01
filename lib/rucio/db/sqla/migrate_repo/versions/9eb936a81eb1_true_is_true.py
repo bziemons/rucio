@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2019-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,8 @@
 #
 # Authors:
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019
+# - Martin Barisits <barisits@barisits-unix-03.cern.ch>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' true is true '''
 
@@ -36,7 +39,7 @@ def upgrade():
     '''
 
     # First, change all uppercase booleanstrings to lowercase booleanstrings
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
         op.execute("UPDATE " + schema + "account_attr_map SET value='true' WHERE value='True'")  # pylint: disable=no-member
         op.execute("UPDATE " + schema + "account_attr_map SET value='false' WHERE value='False'")  # pylint: disable=no-member
@@ -59,7 +62,7 @@ def downgrade():
     '''
 
     # First, change all lowercase booleanstrings to uppercase booleanstrings
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
         op.execute("UPDATE " + schema + "account_attr_map SET value='True' WHERE value='true'")  # pylint: disable=no-member
         op.execute("UPDATE " + schema + "account_attr_map SET value='False' WHERE value='false'")  # pylint: disable=no-member

@@ -17,6 +17,7 @@
 # - Martin Barisits <martin.barisits@cern.ch>, 2018-2019
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019-2021
 # - Robert Illingworth <illingwo@fnal.gov>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' new bad_pfns table and bad_replicas changes '''
 
@@ -72,7 +73,7 @@ def upgrade():
         # Add new Index to Table
         create_index('BAD_REPLICAS_EXPIRES_AT_IDX', 'bad_replicas', ['expires_at'])
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         # Create new bad_pfns table
         create_table('bad_pfns',
                      sa.Column('path', sa.String(2048)),
@@ -86,7 +87,7 @@ def upgrade():
         create_primary_key('BAD_PFNS_PK', 'bad_pfns', ['path', 'state'])
         create_foreign_key('BAD_PFNS_ACCOUNT_FK', 'bad_pfns', 'accounts', ['account'], ['account'])
 
-        op.execute('ALTER TABLE ' + schema + 'bad_replicas DROP CHECK BAD_REPLICAS_STATE_CHK')  # pylint: disable=no-member
+        op.drop_constraint('BAD_REPLICAS_STATE_CHK', 'bad_replicas', type_='check')
         create_check_constraint(constraint_name='BAD_REPLICAS_STATE_CHK', table_name='bad_replicas',
                                 condition="state in ('B', 'D', 'L', 'R', 'S', 'T')")
 
@@ -132,7 +133,7 @@ def downgrade():
         drop_constraint('BAD_REPLICAS_STATE_PK', 'bad_replicas', type_='primary')
         create_primary_key('BAD_REPLICAS_STATE_PK', 'bad_replicas', ['scope', 'name', 'rse_id', 'created_at'])
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         drop_table('bad_pfns')
         drop_index('BAD_REPLICAS_EXPIRES_AT_IDX', 'bad_replicas')
 

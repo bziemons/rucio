@@ -238,7 +238,7 @@ def get_db_time():
         storage_date_format = None
         if s.bind.dialect.name == 'oracle':
             query = select([text("sys_extract_utc(systimestamp)")])
-        elif s.bind.dialect.name == 'mysql':
+        elif s.bind.dialect.name == 'mysql' or s.bind.dialect.name == 'mariadb':
             query = select([text("utc_timestamp()")])
         elif s.bind.dialect.name == 'sqlite':
             query = select([text("datetime('now', 'utc')")])
@@ -304,15 +304,18 @@ def json_implemented(session=None):
     return True
 
 
-def try_drop_constraint(constraint_name, table_name):
+def try_drop_constraint(constraint_name: str, table_name: str, type_: 'Optional[str]' = None):
     """
     Tries to drop the given constrained and returns successfully if the
-    constraint already existed on Oracle databases.
+    constraint already existed on Oracle/MySQL/MariaDB databases.
 
     :param constraint_name: the constraint's name
     :param table_name: the table name where the constraint resides
+    :param type_: the constraint type as used in op.drop_constraint
     """
     try:
-        op.drop_constraint(constraint_name, table_name)
+        op.drop_constraint(constraint_name, table_name, type_=type_)
     except DatabaseError as e:
-        assert 'nonexistent constraint' in str(e)
+        assert 'nonexistent constraint' in str(e) \
+               or 'check that it exists' in str(e) \
+               or 'is not found in the table' in str(e)

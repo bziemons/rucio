@@ -1,4 +1,5 @@
-# Copyright 2013-2020 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,7 @@
 #
 # Authors:
 # - Matt Snyder <msnyder@bnl.gov>, 2021
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' adding transfertool column and index to requests table'''
 
@@ -32,7 +34,7 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'postgresql', 'mysql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         add_column('requests', sa.Column('transfertool', sa.String(64)), schema=schema)
         add_column('requests_history', sa.Column('transfertool', sa.String(64)), schema=schema)
@@ -44,7 +46,7 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'postgresql', 'mysql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         drop_index('REQUESTS_TYP_STA_TRA_ACT_IDX', 'requests')
         drop_column('requests', 'transfertool', schema=schema)

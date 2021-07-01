@@ -1,4 +1,5 @@
-# Copyright 2013-2020 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,7 @@
 #
 # Authors:
 # - Cedric Serfon <cedric.serfon@cern.ch>, 2021
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' Add index on service column in the message table '''
 import sqlalchemy as sa
@@ -30,7 +32,7 @@ def upgrade():
     '''
     Upgrade the database to this revision
     '''
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         alter_column('messages', 'services', existing_type=sa.String(2048), type_=sa.String(256), schema=schema)
         alter_column('messages', 'event_type', existing_type=sa.String(1024), type_=sa.String(256), schema=schema)
@@ -42,7 +44,7 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
     drop_index('MESSAGES_SERVICES_IDX', 'messages')
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         alter_column('messages', 'services', existing_type=sa.String(256), type_=sa.String(2048), schema=schema)
         alter_column('messages', 'event_type', existing_type=sa.String(256), type_=sa.String(1024), schema=schema)

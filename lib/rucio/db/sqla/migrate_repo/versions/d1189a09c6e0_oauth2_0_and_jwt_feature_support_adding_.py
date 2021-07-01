@@ -17,16 +17,17 @@
 # - Jaroslav Guenther <jaroslav.guenther@cern.ch>, 2019-2020
 # - Martin Barisits <martin.barisits@cern.ch>, 2020
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2020-2021
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' OAuth2.0 and JWT feature support; adding table oauth_requests & several columns to tokens table '''
 
 import datetime
 
 import sqlalchemy as sa
-from alembic import context
+from alembic import context, op
 from alembic.op import (add_column, alter_column, drop_column,
                         create_table, create_primary_key, create_index,
-                        create_check_constraint, drop_table, execute)
+                        create_check_constraint, drop_table)
 
 from rucio.db.sqla.types import InternalAccountString
 from rucio.db.sqla.util import try_drop_constraint
@@ -40,8 +41,10 @@ def upgrade():
     '''
     Upgrade the database to this revision
     '''
+
     schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''  # pylint: disable=no-member
-    if context.get_context().dialect.name in ['oracle', 'postgresql']:  # pylint: disable=no-member
+
+    if context.get_context().dialect.name in ['oracle']:
         try_drop_constraint('IDENTITIES_TYPE_CHK', 'identities')
         create_check_constraint(constraint_name='IDENTITIES_TYPE_CHK',
                                 table_name='identities',
@@ -50,17 +53,17 @@ def upgrade():
         create_check_constraint(constraint_name='ACCOUNT_MAP_ID_TYPE_CHK',
                                 table_name='account_map',
                                 condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH', 'SAML', 'OIDC')")
-    elif context.get_context().dialect.name == 'mysql':  # pylint: disable=no-member
-        execute('ALTER TABLE ' + schema + 'identities DROP CHECK IDENTITIES_TYPE_CHK')  # pylint: disable=no-member
-        create_check_constraint(constraint_name='IDENTITIES_TYPE_CHK',
-                                table_name='identities',
-                                condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH', 'SAML', 'OIDC')")
-        execute('ALTER TABLE ' + schema + 'account_map DROP CHECK ACCOUNT_MAP_ID_TYPE_CHK')  # pylint: disable=no-member
-        create_check_constraint(constraint_name='ACCOUNT_MAP_ID_TYPE_CHK',
-                                table_name='account_map',
-                                condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH', 'SAML', 'OIDC')")
+    elif context.get_context().dialect.name in ['postgresql', 'mysql', 'mariadb']:
+        op.drop_constraint('IDENTITIES_TYPE_CHK', 'identities', type_='check')
+        op.create_check_constraint(constraint_name='IDENTITIES_TYPE_CHK',
+                                   table_name='identities',
+                                   condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH', 'SAML', 'OIDC')")
+        op.drop_constraint('ACCOUNT_MAP_ID_TYPE_CHK', 'account_map', type_='check')
+        op.create_check_constraint(constraint_name='ACCOUNT_MAP_ID_TYPE_CHK',
+                                   table_name='account_map',
+                                   condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH', 'SAML', 'OIDC')")
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:  # pylint: disable=no-member
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:  # pylint: disable=no-member
         add_column('tokens', sa.Column('oidc_scope', sa.String(2048), nullable=True, default=None), schema=schema[:-1])
         add_column('tokens', sa.Column('audience', sa.String(315), nullable=True, default=None), schema=schema[:-1])
         add_column('tokens', sa.Column('refresh_token', sa.String(315), nullable=True, default=None), schema=schema[:-1])
@@ -87,7 +90,7 @@ def upgrade():
 
     if context.get_context().dialect.name in ['oracle', 'postgresql']:  # pylint: disable=no-member
         alter_column('tokens', 'token', existing_type=sa.String(length=352), type_=sa.String(length=3072), schema=schema[:-1])
-    if context.get_context().dialect.name in ['mysql']:  # pylint: disable=no-member
+    if context.get_context().dialect.name in ['mysql', 'mariadb']:  # pylint: disable=no-member
         alter_column('tokens', 'token', existing_type=sa.String(length=352), type_=sa.String(length=3072), existing_nullable=False, nullable=False, schema=schema[:-1])
 
 
@@ -116,7 +119,7 @@ def downgrade():
         drop_table('oauth_requests')
         alter_column('tokens', 'token', existing_type=sa.String(length=3072), type_=sa.String(length=352), schema=schema[:-1])
 
-    elif context.get_context().dialect.name == 'mysql':  # pylint: disable=no-member
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:  # pylint: disable=no-member
         create_check_constraint(constraint_name='IDENTITIES_TYPE_CHK',
                                 table_name='identities',
                                 condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH', 'SAML')")

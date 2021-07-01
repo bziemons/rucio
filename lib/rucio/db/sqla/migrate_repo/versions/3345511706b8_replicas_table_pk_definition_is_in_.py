@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2019-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +16,7 @@
 # Authors:
 # - Martin Barisits <martin.barisits@cern.ch>, 2019
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' replicas table PK definition is in wrong order '''
 
@@ -38,7 +40,7 @@ def upgrade():
         create_primary_key('REPLICAS_PK', 'replicas', ['scope', 'name', 'rse_id'])
         create_foreign_key('SOURCES_REPLICA_FK', 'sources', 'replicas', ['scope', 'name', 'rse_id'], ['scope', 'name', 'rse_id'])
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         drop_constraint('SOURCES_REPLICA_FK', 'sources', type_='foreignkey')
         # The constraint has an internal index which is not automatically dropped,
         # we have to do that manually
@@ -63,7 +65,7 @@ def downgrade():
         create_primary_key('REPLICAS_PK', 'replicas', ['rse_id', 'scope', 'name'])
         create_foreign_key('SOURCES_REPLICA_FK', 'sources', 'replicas', ['rse_id', 'scope', 'name'], ['rse_id', 'scope', 'name'])
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         drop_constraint(constraint_name='SOURCES_REPLICA_FK', table_name='sources', type_='foreignkey')
         # The constraint has an internal index which is not automatically dropped,
         # we have to do that manually

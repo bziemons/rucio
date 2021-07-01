@@ -1,4 +1,5 @@
-# Copyright 2013-2021 CERN
+# -*- coding: utf-8 -*-
+# Copyright 2019-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +15,14 @@
 #
 # Authors:
 # - Ruturaj Gujar <ruturaj.gujar23@gmail.com>, 2019
+# - Martin Barisits <martin.barisits@cern.ch>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2021
 
 ''' add saml identity type '''
 
 from alembic import context
-from alembic.op import create_check_constraint, drop_constraint, execute
+from alembic.op import create_check_constraint, drop_constraint
 
 from rucio.db.sqla.util import try_drop_constraint
 
@@ -33,8 +36,7 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
-    if context.get_context().dialect.name in ['oracle', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle']:
         try_drop_constraint('IDENTITIES_TYPE_CHK', 'identities')
         create_check_constraint(constraint_name='IDENTITIES_TYPE_CHK',
                                 table_name='identities',
@@ -44,12 +46,12 @@ def upgrade():
                                 table_name='account_map',
                                 condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH', 'SAML')")
 
-    elif context.get_context().dialect.name == 'mysql':
-        execute('ALTER TABLE ' + schema + 'identities DROP CHECK IDENTITIES_TYPE_CHK')  # pylint: disable=no-member
+    if context.get_context().dialect.name in ['postgresql', 'mysql', 'mariadb']:
+        drop_constraint('IDENTITIES_TYPE_CHK', 'identities', type_='check')
         create_check_constraint(constraint_name='IDENTITIES_TYPE_CHK',
                                 table_name='identities',
                                 condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH', 'SAML')")
-        execute('ALTER TABLE ' + schema + 'account_map DROP CHECK ACCOUNT_MAP_ID_TYPE_CHK')  # pylint: disable=no-member
+        drop_constraint('ACCOUNT_MAP_ID_TYPE_CHK', 'account_map', type_='check')
         create_check_constraint(constraint_name='ACCOUNT_MAP_ID_TYPE_CHK',
                                 table_name='account_map',
                                 condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH', 'SAML')")
@@ -60,7 +62,6 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
     if context.get_context().dialect.name in ['oracle']:
         try_drop_constraint('IDENTITIES_TYPE_CHK', 'identities')
         create_check_constraint(constraint_name='IDENTITIES_TYPE_CHK',
@@ -72,19 +73,7 @@ def downgrade():
                                 table_name='account_map',
                                 condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH')")
 
-    elif context.get_context().dialect.name == 'mysql':
-        execute('ALTER TABLE ' + schema + 'identities DROP CHECK IDENTITIES_TYPE_CHK')  # pylint: disable=no-member
-        create_check_constraint(constraint_name='IDENTITIES_TYPE_CHK',
-                                table_name='identities',
-                                condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH')")
-
-        execute('ALTER TABLE ' + schema + 'account_map DROP CHECK ACCOUNT_MAP_ID_TYPE_CHK')  # pylint: disable=no-member
-        create_check_constraint(constraint_name='ACCOUNT_MAP_ID_TYPE_CHK',
-                                table_name='account_map',
-                                condition="identity_type in ('X509', 'GSS', 'USERPASS', 'SSH')")
-
-    elif context.get_context().dialect.name == 'postgresql':
-
+    elif context.get_context().dialect.name in ['postgresql', 'mysql', 'mariadb']:
         drop_constraint('IDENTITIES_TYPE_CHK', 'identities', type_='check')
         create_check_constraint(constraint_name='IDENTITIES_TYPE_CHK',
                                 table_name='identities',

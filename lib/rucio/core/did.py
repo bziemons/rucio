@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2013-2020 CERN
+# Copyright 2013-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 #
 # Authors:
 # - Vincent Garonne <vincent.garonne@cern.ch>, 2013-2018
-# - Martin Barisits <martin.barisits@cern.ch>, 2013-2020
+# - Martin Barisits <martin.barisits@cern.ch>, 2013-2021
 # - Cedric Serfon <cedric.serfon@cern.ch>, 2013-2020
 # - Ralph Vigne <ralph.vigne@cern.ch>, 2013
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2013-2020
@@ -23,7 +23,7 @@
 # - Thomas Beermann <thomas.beermann@cern.ch>, 2013-2021
 # - Joaquín Bogado <jbogado@linti.unlp.edu.ar>, 2014-2015
 # - Wen Guan <wen.guan@cern.ch>, 2015
-# - asket <asket.agarwal96@gmail.com>, 2018
+# - Asket Agarwal <asket.agarwal96@gmail.com>, 2018
 # - Hannes Hansen <hannes.jakob.hansen@cern.ch>, 2018-2019
 # - Tobias Wegner <twegner@cern.ch>, 2019
 # - Andrew Lister <andrew.lister@stfc.ac.uk>, 2019
@@ -32,8 +32,10 @@
 # - Brandon White <bjwhite@fnal.gov>, 2019
 # - Luc Goossens <luc.goossens@cern.ch>, 2020
 # - Eli Chadwick <eli.chadwick@stfc.ac.uk>, 2020
-# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020-2021
 # - Vivek Nigam <viveknigam.nigam3@gmail.com>, 2020
+# - Rahul Chauhan <omrahulchauhan@gmail.com>, 2021
+# - Radu Carpa <radu.carpa@cern.ch>, 2021
 
 import logging
 import random
@@ -82,7 +84,7 @@ def list_expired_dids(worker_number=None, total_workers=None, limit=None, sessio
         order_by(models.DataIdentifier.expired_at).\
         with_hint(models.DataIdentifier, "index(DIDS DIDS_EXPIRED_AT_IDX)", 'oracle')
 
-    if session.bind.dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if session.bind.dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         query = filter_thread_work(session=session, query=query, total_threads=total_workers, thread_id=worker_number, hash_variable='name')
     elif session.bind.dialect.name == 'sqlite' and worker_number and total_workers and total_workers > 0:
         row_count = 0
@@ -201,7 +203,7 @@ def add_dids(dids, account, session=None):
     except IntegrityError as error:
         if match('.*IntegrityError.*ORA-00001: unique constraint.*DIDS_PK.*violated.*', error.args[0]) \
                 or match('.*IntegrityError.*UNIQUE constraint failed: dids.scope, dids.name.*', error.args[0]) \
-                or match('.*IntegrityError.*1062.*Duplicate entry.*for key.*', error.args[0]) \
+                or match('.*IntegrityError.*Duplicate entry.*for key.*', error.args[0]) \
                 or match('.*IntegrityError.*duplicate key value violates unique constraint.*', error.args[0]) \
                 or match('.*UniqueViolation.*duplicate key value violates unique constraint.*', error.args[0]) \
                 or match('.*IntegrityError.*columns? .*not unique.*', error.args[0]):

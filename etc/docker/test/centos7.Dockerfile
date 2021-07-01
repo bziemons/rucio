@@ -27,11 +27,17 @@ ARG PYTHON
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
+WORKDIR /
+
 RUN yum install -y epel-release.noarch && \
     yum -y update && \
     yum -y install gcc httpd gmp-devel krb5-devel mod_ssl mod_auth_kerb git openssl-devel bzip2-devel gridsite which libaio memcached ffi-devel nmap-ncat && \
     yum -y install https://repo.ius.io/ius-release-el7.rpm && \
     yum -y install libxml2-devel xmlsec1-devel xmlsec1-openssl-devel libtool-ltdl-devel python && \
+    curl -sSL https://downloads.mariadb.com/Connectors/c/connector-c-3.1.13/mariadb-connector-c-3.1.13-centos7-amd64.tar.gz | tar xzv && \
+    alternatives --install /usr/bin/mariadb_config mariadb_config /mariadb-connector-c-3.1.13-centos7-amd64/bin/mariadb_config 1 && \
+    alternatives --install /usr/lib64/libmariadb.so.3 libmariadb.so.3 /mariadb-connector-c-3.1.13-centos7-amd64/lib/mariadb/libmariadb.so.3 1 && \
+    alternatives --install /usr/lib64/libmariadb.so libmariadb.so /mariadb-connector-c-3.1.13-centos7-amd64/lib/mariadb/libmariadb.so.3 1 && \
     if [ "$PYTHON" == "2.7" ] ; then yum -y install python-devel python-pip python36u python36u-devel python36u-pip python36u-mod_wsgi gfal2-python3 ; fi && \
     if [ "$PYTHON" == "3.6" ] ; then yum -y install python36u python36u-devel python36u-pip python36u-mod_wsgi gfal2-python3 ; fi && \
     if [ "$PYTHON" == "3.7" ] ; then yum -y install httpd-devel ncurses-devel sqlite-devel libffi-devel uuid-devel rpm-build rpmdevtools redhat-rpm-config boost-devel \
@@ -157,7 +163,7 @@ COPY lib lib
 
 # Install Rucio server + dependencies
 RUN if [ "$PYTHON" == "2.7" ] ; then PYEXEC=python3 ; else PYEXEC=python ; fi ; \
-    $PYEXEC -m pip --no-cache-dir install --upgrade .[oracle,postgresql,mysql,kerberos,saml,dev] && \
+    $PYEXEC -m pip --no-cache-dir install --upgrade .[oracle,postgresql,mysql,mariadb,kerberos,saml,dev] && \
     $PYEXEC -m pip list
 
 WORKDIR /opt/rucio

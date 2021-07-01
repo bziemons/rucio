@@ -13,14 +13,12 @@
 # limitations under the License.
 #
 # Authors:
-# - John Doe <john.doe@asdf.com>, 2021
+# - John Doe <john.doe@example.com>, 2021
 
-''' ${message} '''
+""" ${message} """
 
 import sqlalchemy as sa
-
-from alembic import context
-from alembic.op import execute
+from alembic import context, op
 
 # Alembic revision identifiers
 revision = ${repr(up_revision)}
@@ -40,7 +38,7 @@ def upgrade():
     elif context.get_context().dialect.name == 'postgresql':
         pass
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name == 'mysql' or context.get_context().dialect.name == 'mariadb':
         pass
 
 
@@ -57,5 +55,5 @@ def downgrade():
     elif context.get_context().dialect.name == 'postgresql':
         pass
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name == 'mysql' or context.get_context().dialect.name == 'mariadb':
         pass

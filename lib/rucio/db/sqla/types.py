@@ -55,7 +55,7 @@ class GUID(TypeDecorator):
             return dialect.type_descriptor(UUID())
         elif dialect.name == 'oracle':
             return dialect.type_descriptor(RAW(16))
-        elif dialect.name == 'mysql':
+        elif dialect.name == 'mysql' or dialect.name == 'mariadb':
             return dialect.type_descriptor(BINARY(16))
         else:
             return dialect.type_descriptor(CHAR(32))
@@ -67,7 +67,7 @@ class GUID(TypeDecorator):
             return str(value).lower()
         elif dialect.name == 'oracle':
             return uuid.UUID(value).bytes
-        elif dialect.name == 'mysql':
+        elif dialect.name == 'mysql' or dialect.name == 'mariadb':
             return uuid.UUID(value).bytes
         else:
             if not isinstance(value, uuid.UUID):
@@ -81,7 +81,7 @@ class GUID(TypeDecorator):
             return value
         elif dialect.name == 'oracle':
             return str(uuid.UUID(bytes=value)).replace('-', '').lower()
-        elif dialect.name == 'mysql':
+        elif dialect.name == 'mysql' or dialect.name == 'mariadb':
             return str(uuid.UUID(bytes=value)).replace('-', '').lower()
         else:
             return str(uuid.UUID(value)).replace('-', '').lower()
@@ -142,7 +142,7 @@ class JSON(TypeDecorator):
     def load_dialect_impl(self, dialect):
         if dialect.name == 'postgresql':
             return dialect.type_descriptor(JSONB())
-        elif dialect.name == 'mysql':
+        elif dialect.name == 'mysql' or dialect.name == 'mariadb':
             return dialect.type_descriptor(types.JSON())
         elif dialect.name == 'oracle':
             return dialect.type_descriptor(CLOB())

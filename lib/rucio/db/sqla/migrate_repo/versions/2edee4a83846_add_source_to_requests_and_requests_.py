@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2015-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +14,11 @@
 # limitations under the License.
 #
 # Authors:
-# - Joaquin Bogado <jbogadog@cern.ch>, 2015
+# - Joaquín Bogado <jbogado@linti.unlp.edu.ar>, 2015
+# - Martin Barisits <martin.barisits@cern.ch>, 2016
 # - Vincent Garonne <vincent.garonne@cern.ch>, 2017
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' add source to requests and requests_history '''
 
@@ -37,7 +40,7 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         add_column('requests', sa.Column('source_rse_id', GUID()), schema=schema)
         add_column('requests_history', sa.Column('source_rse_id', GUID()), schema=schema)
@@ -48,7 +51,7 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         drop_column('requests', 'source_rse_id', schema=schema)
         drop_column('requests_history', 'source_rse_id', schema=schema)

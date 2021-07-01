@@ -43,6 +43,11 @@ elif [[ "${RDBMS:-}" =~ mysql.* ]]; then
   # (1213, 'Deadlock found when trying to get lock; try restarting transaction')"
   echo "Disabling parallel testing for mysql"
   NO_XDIST="True"
+elif [[ "${RDBMS:-}" =~ mariadb.* ]]; then
+  # no parallel tests on mysql, because of random "sqlalchemy.exc.InterfaceError:
+  # (mariadb.InterfaceError) Commands out of sync; you can't run this command now"
+  echo "Disabling parallel testing for mariadb"
+  NO_XDIST="True"
 elif [[ "${RDBMS:-}" == "oracle" ]]; then
   # no parallel tests on oracle, because of random "cx_Oracle.DatabaseError:
   # ORA-00060: deadlock detected while waiting for resource"

@@ -1,4 +1,5 @@
-# Copyright 2013-2021 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +14,8 @@
 # limitations under the License.
 #
 # Authors:
-# - Joaquin Bogado <joaquinbogado@gmail.com>, 2021
+# - Joaquín Bogado <jbogado@linti.unlp.edu.ar>, 2021
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' add_rse_id_to_replicas_table '''
 
@@ -40,8 +42,8 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['mysql']:
+    if context.get_context().dialect.name in ['mysql', 'mariadb']:
         drop_constraint('REPLICAS_RSE_ID_FK', 'replicas', type_='foreignkey')
     drop_index('REPLICAS_RSE_ID_IDX', 'replicas')
-    if context.get_context().dialect.name in ['mysql']:
+    if context.get_context().dialect.name in ['mysql', 'mariadb']:
         create_foreign_key('REPLICAS_RSE_ID_FK', 'replicas', 'rses', ['rse_id'], ['id'])

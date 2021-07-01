@@ -18,13 +18,13 @@
 # - Angelos Molfetas <Angelos.Molfetas@cern.ch>, 2012
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2012-2020
 # - Vincent Garonne <vincent.garonne@cern.ch>, 2012-2015
-# - Martin Barisits <martin.barisits@cern.ch>, 2014-2021
+# - Martin Barisits <martin.barisits@cern.ch>, 2014-2019
 # - Cedric Serfon <cedric.serfon@cern.ch>, 2014-2019
 # - Joaquín Bogado <jbogado@linti.unlp.edu.ar>, 2015
 # - Hannes Hansen <hannes.jakob.hansen@cern.ch>, 2018-2019
 # - Andrew Lister <andrew.lister@stfc.ac.uk>, 2019
 # - Patrick Austin <patrick.austin@stfc.ac.uk>, 2020
-# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020-2021
 
 from datetime import datetime
 from enum import Enum
@@ -276,7 +276,7 @@ def add_account_attribute(account, key, value, session=None):
         new_attr.save(session=session)
     except IntegrityError as error:
         if match('.*IntegrityError.*ORA-00001: unique constraint.*ACCOUNT_ATTR_MAP_PK.*violated.*', error.args[0]) \
-           or match('.*IntegrityError.*1062.*Duplicate entry.*for key.*', error.args[0]) \
+           or match('.*IntegrityError.*Duplicate entry.*for key.*', error.args[0]) \
            or match('.*IntegrityError.*UNIQUE constraint failed: account_attr_map.account, account_attr_map.key.*', error.args[0]) \
            or match('.*IntegrityError.*columns? account.*key.*not unique.*', error.args[0]) \
            or match('.*IntegrityError.*duplicate key value violates unique constraint.*', error.args[0]) \

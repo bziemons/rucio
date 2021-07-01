@@ -15,12 +15,12 @@
 #
 # Authors:
 # - Vincent Garonne <vincent.garonne@cern.ch>, 2015-2017
-# - Joaquín Bogado <jbogado@linti.unlp.edu.ar>, 2015-2019
+# - Joaquín Bogado <jbogado@linti.unlp.edu.ar>, 2015-2021
 # - Wen Guan <wen.guan@cern.ch>, 2015
-# - Martin Barisits <martin.barisits@cern.ch>, 2015-2021
+# - Martin Barisits <martin.barisits@cern.ch>, 2015-2020
 # - Cedric Serfon <cedric.serfon@cern.ch>, 2016-2021
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2017-2020
-# - asket <asket.agarwal96@gmail.com>, 2018
+# - Asket Agarwal <asket.agarwal96@gmail.com>, 2018
 # - Hannes Hansen <hannes.jakob.hansen@cern.ch>, 2019
 # - Andrew Lister <andrew.lister@stfc.ac.uk>, 2019
 # - Ruturaj Gujar <ruturaj.gujar23@gmail.com>, 2019
@@ -84,7 +84,7 @@ def compile_binary_oracle(type_, compiler, **kw):
 
 @event.listens_for(Table, "before_create")
 def _mysql_rename_type(target, connection, **kw):
-    if connection.dialect.name == 'mysql' and target.name == 'quarantined_replicas':
+    if connection.dialect.name in ['mysql', 'mariadb'] and target.name == 'quarantined_replicas':
         target.columns.path.type = String(255)
 
 
@@ -907,7 +907,9 @@ class RSEFileAssociation(BASE, ModelBase):
                    CheckConstraint('bytes IS NOT NULL', name='REPLICAS_SIZE_NN'),
                    CheckConstraint('lock_cnt IS NOT NULL', name='REPLICAS_LOCK_CNT_NN'),
                    Index('REPLICAS_TOMBSTONE_IDX', 'tombstone'),
-                   Index('REPLICAS_PATH_IDX', 'path', mysql_length=get_schema_value('NAME_LENGTH')),
+                   Index('REPLICAS_PATH_IDX', 'path',
+                         mysql_length=get_schema_value('NAME_LENGTH'),
+                         mariadb_length=get_schema_value('NAME_LENGTH')),
                    Index('REPLICAS_STATE_IDX', 'state'),  # Under Oracle this is a FB Index
                    Index('REPLICAS_RSE_ID_IDX', 'rse_id'))
 
@@ -1020,7 +1022,7 @@ class ReplicationRule(BASE, ModelBase):
                    CheckConstraint('LOCKS_STUCK_CNT IS NOT NULL', name='RULES_LOCKS_STUCK_CNT_NN'),
                    CheckConstraint('PURGE_REPLICAS IS NOT NULL', name='RULES_PURGE_REPLICAS_NN'),
                    Index('RULES_SC_NA_AC_RS_CO_UQ_IDX', 'scope', 'name', 'account', 'rse_expression', 'copies',
-                         unique=True, mysql_length={'rse_expression': 767}),
+                         unique=True, mysql_length={'rse_expression': 767}, mariadb_length={'rse_expression': 767}),
                    Index('RULES_SCOPE_NAME_IDX', 'scope', 'name'),
                    Index('RULES_EXPIRES_AT_IDX', 'expires_at'),
                    Index('RULES_STUCKSTATE_IDX', 'state'),  # This Index is only needed for the STUCK state, there also is FB: RULES_INJECTSTATE_IDX, RULES_APPROVALSTATE_IDX

@@ -108,7 +108,7 @@ def get_bad_replicas_summary(rse_expression=None, from_date=None, to_date=None, 
 
     if session.bind.dialect.name == 'oracle':
         to_days = func.trunc(models.BadReplicas.created_at, str('DD'))
-    elif session.bind.dialect.name == 'mysql':
+    elif session.bind.dialect.name == 'mysql' or session.bind.dialect.name == 'mariadb':
         to_days = func.date(models.BadReplicas.created_at)
     elif session.bind.dialect.name == 'postgresql':
         to_days = func.date_trunc('day', models.BadReplicas.created_at)
@@ -2815,7 +2815,7 @@ def get_cleaned_updated_collection_replicas(total_workers, worker_number, limit=
         if BASE.metadata.schema:
             schema = BASE.metadata.schema + '.'
         session.execute('DELETE FROM {schema}updated_col_rep A WHERE A.rowid > ANY (SELECT B.rowid FROM {schema}updated_col_rep B WHERE A.scope = B.scope AND A.name=B.name AND A.did_type=B.did_type AND (A.rse_id=B.rse_id OR (A.rse_id IS NULL and B.rse_id IS NULL)))'.format(schema=schema))
-    elif session.bind.dialect.name == 'mysql':
+    elif session.bind.dialect.name == 'mysql' or session.bind.dialect.name == 'mariadb':
         subquery1 = session.query(func.max(models.UpdatedCollectionReplica.id).label('max_id')).\
             group_by(models.UpdatedCollectionReplica.scope,
                      models.UpdatedCollectionReplica.name,

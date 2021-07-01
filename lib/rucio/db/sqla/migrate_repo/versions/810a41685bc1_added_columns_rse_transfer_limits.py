@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2019-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,8 @@
 #
 # Authors:
 # - Hannes Hansen <hannes.jakob.hansen@cern.ch>, 2019
+# - Martin Barisits <martin.barisits@cern.ch>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' added_columns_rse_transfer_limits '''
 
@@ -35,7 +38,7 @@ def upgrade():
 
     schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
 
-    if context.get_context().dialect.name in ['oracle', 'postgresql', 'mysql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         add_column('rse_transfer_limits', sa.Column('deadline', sa.BigInteger), schema=schema)
         add_column('rse_transfer_limits', sa.Column('strategy', sa.String(25)), schema=schema)
         add_column('rse_transfer_limits', sa.Column('direction', sa.String(25)), schema=schema)
@@ -48,7 +51,7 @@ def downgrade():
 
     schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
 
-    if context.get_context().dialect.name in ['oracle', 'postgresql', 'mysql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         drop_column('rse_transfer_limits', 'deadline', schema=schema)
         drop_column('rse_transfer_limits', 'strategy', schema=schema)
         drop_column('rse_transfer_limits', 'direction', schema=schema)

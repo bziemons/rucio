@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2019-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,11 +17,11 @@
 # - Martin Barisits <martin.barisits@cern.ch>, 2019
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019-2021
 # - Robert Illingworth <illingwo@fnal.gov>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' new replica state for temporary unavailable replicas '''
 
 from alembic import context, op
-from alembic.op import create_check_constraint
 
 from rucio.db.sqla.util import try_drop_constraint
 
@@ -38,8 +39,8 @@ def upgrade():
 
     if context.get_context().dialect.name == 'oracle':
         try_drop_constraint('REPLICAS_STATE_CHK', 'replicas')
-        create_check_constraint(constraint_name='REPLICAS_STATE_CHK', table_name='replicas',
-                                condition="state in ('A', 'U', 'C', 'B', 'D', 'S', 'T')")
+        op.create_check_constraint(constraint_name='REPLICAS_STATE_CHK', table_name='replicas',
+                                   condition="state in ('A', 'U', 'C', 'B', 'D', 'S', 'T')")
 
     elif context.get_context().dialect.name == 'postgresql':
         op.execute('ALTER TABLE ' + schema + 'replicas DROP CONSTRAINT IF EXISTS "REPLICAS_STATE_CHK", ALTER COLUMN state TYPE CHAR')
@@ -47,10 +48,10 @@ def upgrade():
         op.execute("CREATE TYPE \"REPLICAS_STATE_CHK\" AS ENUM('A', 'U', 'C', 'B', 'D', 'S', 'T')")
         op.execute("ALTER TABLE %sreplicas ALTER COLUMN state TYPE \"REPLICAS_STATE_CHK\" USING state::\"REPLICAS_STATE_CHK\"" % schema)
 
-    elif context.get_context().dialect.name == 'mysql':
-        op.execute('ALTER TABLE ' + schema + 'replicas DROP CHECK REPLICAS_STATE_CHK')  # pylint: disable=no-member
-        create_check_constraint(constraint_name='REPLICAS_STATE_CHK', table_name='replicas',
-                                condition="state in ('A', 'U', 'C', 'B', 'D', 'S', 'T')")
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
+        op.drop_constraint('REPLICAS_STATE_CHK', 'replicas', type_='check')
+        op.create_check_constraint(constraint_name='REPLICAS_STATE_CHK', table_name='replicas',
+                                   condition="state in ('A', 'U', 'C', 'B', 'D', 'S', 'T')")
 
 
 def downgrade():
@@ -62,8 +63,8 @@ def downgrade():
 
     if context.get_context().dialect.name == 'oracle':
         try_drop_constraint('REPLICAS_STATE_CHK', 'replicas')
-        create_check_constraint(constraint_name='REPLICAS_STATE_CHK', table_name='replicas',
-                                condition="state in ('A', 'U', 'C', 'B', 'D', 'S')")
+        op.create_check_constraint(constraint_name='REPLICAS_STATE_CHK', table_name='replicas',
+                                   condition="state in ('A', 'U', 'C', 'B', 'D', 'S')")
 
     elif context.get_context().dialect.name == 'postgresql':
         op.execute('ALTER TABLE ' + schema + 'replicas DROP CONSTRAINT IF EXISTS "REPLICAS_STATE_CHK", ALTER COLUMN state TYPE CHAR')
@@ -71,7 +72,7 @@ def downgrade():
         op.execute("CREATE TYPE \"REPLICAS_STATE_CHK\" AS ENUM('A', 'U', 'C', 'B', 'D', 'S')")
         op.execute("ALTER TABLE %sreplicas ALTER COLUMN state TYPE \"REPLICAS_STATE_CHK\" USING state::\"REPLICAS_STATE_CHK\"" % schema)
 
-    elif context.get_context().dialect.name == 'mysql':
-        op.execute('ALTER TABLE ' + schema + 'replicas DROP CHECK REPLICAS_STATE_CHK')  # pylint: disable=no-member
-        create_check_constraint(constraint_name='REPLICAS_STATE_CHK', table_name='replicas',
-                                condition="state in ('A', 'U', 'C', 'B', 'D', 'S')")
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
+        op.drop_constraint('REPLICAS_STATE_CHK', 'replicas', type_='check')
+        op.create_check_constraint(constraint_name='REPLICAS_STATE_CHK', table_name='replicas',
+                                   condition="state in ('A', 'U', 'C', 'B', 'D', 'S')")

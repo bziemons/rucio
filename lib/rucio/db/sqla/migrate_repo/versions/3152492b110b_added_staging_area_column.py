@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2015-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +14,11 @@
 # limitations under the License.
 #
 # Authors:
-# - Vincent Garonne <vgaronne@gmail.com>, 2015-2017
+# - Vincent Garonne <vincent.garonne@cern.ch>, 2015-2017
 # - Martin Barisits <martin.barisits@cern.ch>, 2016
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019-2021
 # - Robert Illingworth <illingwo@fnal.gov>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' added staging_area column '''
 
@@ -50,9 +52,9 @@ def upgrade():
         create_check_constraint(constraint_name='REQUESTS_TYPE_CHK', table_name='requests',
                                 condition="request_type in ('U', 'D', 'T', 'I', '0')")
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         add_column('rses', sa.Column('staging_area', sa.Boolean(name='RSE_STAGING_AREA_CHK'), default=False), schema=schema[:-1])
-        op.execute('ALTER TABLE ' + schema + 'requests DROP CHECK REQUESTS_TYPE_CHK')  # pylint: disable=no-member
+        drop_constraint('REQUESTS_TYPE_CHK', 'requests', type_='check')
         create_check_constraint(constraint_name='REQUESTS_TYPE_CHK', table_name='requests',
                                 condition="request_type in ('U', 'D', 'T', 'I', '0')")
 
@@ -77,7 +79,7 @@ def downgrade():
                                 condition="request_type in ('U', 'D', 'T')")
         drop_column('rses', 'staging_area', schema=schema[:-1])
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         create_check_constraint(constraint_name='REQUESTS_TYPE_CHK', table_name='requests',
                                 condition="request_type in ('U', 'D', 'T')")
         drop_column('rses', 'staging_area', schema=schema[:-1])

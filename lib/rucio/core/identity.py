@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2020 CERN
+# Copyright 2012-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,9 +23,7 @@
 # - Jaroslav Guenther <jaroslav.guenther@cern.ch>, 2019
 # - Eli Chadwick <eli.chadwick@stfc.ac.uk>, 2020
 # - Eric Vaandering <ewv@fnal.gov>, 2020
-# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020
-#
-# PY3K COMPATIBLE
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020-2021
 
 import hashlib
 import os
@@ -67,7 +65,7 @@ def add_identity(identity, type, email, password=None, session=None):
     try:
         new_id.save(session=session)
     except IntegrityError as e:
-        if match('.*IntegrityError.*1062.*Duplicate entry.*for key.*', e.args[0]):
+        if match('.*IntegrityError.*Duplicate entry.*for key.*', e.args[0]):
             raise exception.Duplicate('Identity pair \'%s\',\'%s\' already exists!' % (identity, type))
         raise exception.DatabaseException(str(e))
 
@@ -117,7 +115,7 @@ def add_account_identity(identity, type, account, email, default=False, password
     except IntegrityError as error:
         if match('.*IntegrityError.*ORA-00001: unique constraint.*violated.*', error.args[0]) \
                 or match('.*IntegrityError.*UNIQUE constraint failed.*', error.args[0]) \
-                or match('.*IntegrityError.*1062.*Duplicate entry.*for key.*', error.args[0]) \
+                or match('.*IntegrityError.*Duplicate entry.*for key.*', error.args[0]) \
                 or match('.*IntegrityError.*duplicate key value violates unique constraint.*', error.args[0]) \
                 or match('.*UniqueViolation.*duplicate key value violates unique constraint.*', error.args[0]) \
                 or match('.*IntegrityError.*columns? .*not unique.*', error.args[0]):

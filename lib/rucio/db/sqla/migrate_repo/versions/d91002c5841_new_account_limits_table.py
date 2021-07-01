@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2015-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +14,10 @@
 # limitations under the License.
 #
 # Authors:
-# - Martin Barisits <martin.barisits@cern.ch>, 2014
-# - Mario Lassnig <mario.lassnig@cern.ch>, 2014-2019
-# - Vincent Garonne <vincent.garonne@cern.ch>, 2017
+# - Vincent Garonne <vincent.garonne@cern.ch>, 2015-2017
+# - Martin Barisits <martin.barisits@cern.ch>, 2016
+# - Mario Lassnig <mario.lassnig@cern.ch>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' new account_limits table '''
 
@@ -56,7 +58,7 @@ def upgrade():
         create_foreign_key('ACCOUNT_LIMITS_ACCOUNT_FK', 'account_limits', 'accounts', ['account'], ['account'])
         create_foreign_key('ACCOUNT_LIMITS_RSE_ID_FK', 'account_limits', 'rses', ['rse_id'], ['id'])
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         drop_table('account_limits')
 
         create_table('account_limits',
@@ -78,7 +80,7 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         drop_table('account_limits')
 
         create_table('account_limits',
@@ -94,7 +96,7 @@ def downgrade():
         create_check_constraint('ACCOUNT_LIMITS_UPDATED_NN', 'account_limits', 'updated_at is not null')
         create_foreign_key('ACCOUNT_LIMITS_ACCOUNT_FK', 'account_limits', 'accounts', ['account'], ['account'])
 
-    elif context.get_context().dialect.name == 'mysql':
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
         drop_table('account_limits')
 
         create_table('account_limits',

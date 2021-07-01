@@ -17,7 +17,7 @@
 # - Vincent Garonne <vincent.garonne@cern.ch>, 2012-2018
 # - Ralph Vigne <ralph.vigne@cern.ch>, 2012-2015
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2012-2021
-# - Martin Barisits <martin.barisits@cern.ch>, 2013-2021
+# - Martin Barisits <martin.barisits@cern.ch>, 2013-2020
 # - Cedric Serfon <cedric.serfon@cern.ch>, 2013-2021
 # - Thomas Beermann <thomas.beermann@cern.ch>, 2014-2017
 # - Wen Guan <wen.guan@cern.ch>, 2015-2016
@@ -925,7 +925,7 @@ def add_protocol(rse_id, parameter, session=None):
     except (IntegrityError, FlushError, OperationalError) as error:
         if ('UNIQUE constraint failed' in error.args[0]) or ('conflicts with persistent instance' in error.args[0]) \
                 or match('.*IntegrityError.*ORA-00001: unique constraint.*RSE_PROTOCOLS_PK.*violated.*', error.args[0]) \
-                or match('.*IntegrityError.*1062.*Duplicate entry.*for key.*', error.args[0]) \
+                or match('.*IntegrityError.*Duplicate entry.*for key.*', error.args[0]) \
                 or match('.*IntegrityError.*duplicate key value violates unique constraint.*', error.args[0]) \
                 or match('.*UniqueViolation.*duplicate key value violates unique constraint.*', error.args[0]) \
                 or match('.*IntegrityError.*columns.*are not unique.*', error.args[0]):
@@ -1330,7 +1330,7 @@ def add_qos_policy(rse_id, qos_policy, session=None):
     except (IntegrityError, FlushError, OperationalError) as error:
         if ('UNIQUE constraint failed' in error.args[0]) or ('conflicts with persistent instance' in error.args[0]) \
            or match('.*IntegrityError.*ORA-00001: unique constraint.*RSE_PROTOCOLS_PK.*violated.*', error.args[0]) \
-           or match('.*IntegrityError.*1062.*Duplicate entry.*for key.*', error.args[0]) \
+           or match('.*IntegrityError.*Duplicate entry.*for key.*', error.args[0]) \
            or match('.*IntegrityError.*duplicate key value violates unique constraint.*', error.args[0])\
            or match('.*UniqueViolation.*duplicate key value violates unique constraint.*', error.args[0])\
            or match('.*IntegrityError.*columns.*are not unique.*', error.args[0]):

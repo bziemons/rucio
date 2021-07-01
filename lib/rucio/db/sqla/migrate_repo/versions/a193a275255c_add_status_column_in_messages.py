@@ -1,4 +1,5 @@
-# Copyright 2014-2020 CERN
+# -*- coding: utf-8 -*-
+# Copyright 2020-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,7 @@
 #
 # Authors:
 # - Cedric Serfon <cedric.serfon@cern.ch>, 2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020-2021
 
 ''' Add status column in messages '''
 
@@ -34,7 +36,7 @@ def upgrade():
 
     schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
 
-    if context.get_context().dialect.name in ['oracle', 'postgresql', 'mysql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         add_column('messages', sa.Column('services', sa.String(2048)), schema=schema[:-1])
         add_column('messages_history', sa.Column('services', sa.String(2048)), schema=schema[:-1])
 
@@ -46,6 +48,6 @@ def downgrade():
 
     schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
 
-    if context.get_context().dialect.name in ['oracle', 'postgresql', 'mysql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         drop_column('messages', 'services', schema=schema[:-1])
         drop_column('messages_history', 'services', schema=schema[:-1])

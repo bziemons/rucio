@@ -1,4 +1,5 @@
-# Copyright 2013-2021 CERN
+# -*- coding: utf-8 -*-
+# Copyright 2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +15,7 @@
 #
 # Authors:
 # - Cedric Serfon <cedric.serfon@cern.ch>, 2021
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' Extending columns for filter and replication_rules in subscriptions '''
 
@@ -34,7 +36,7 @@ def upgrade():
     '''
 
     schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         alter_column('subscriptions', 'filter', existing_type=sa.String(2048), type_=sa.String(4000), schema=schema)
         alter_column('subscriptions', 'replication_rules', existing_type=sa.String(1024), type_=sa.String(4000), schema=schema)
         alter_column('subscriptions_history', 'filter', existing_type=sa.String(2048), type_=sa.String(4000), schema=schema)
@@ -47,7 +49,7 @@ def downgrade():
     '''
 
     schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         alter_column('subscriptions', 'filter', existing_type=sa.String(4000), type_=sa.String(2048), schema=schema)
         alter_column('subscriptions', 'replication_rules', existing_type=sa.String(4000), type_=sa.String(1024), schema=schema)
         alter_column('subscriptions_history', 'filter', existing_type=sa.String(4000), type_=sa.String(2048), schema=schema)

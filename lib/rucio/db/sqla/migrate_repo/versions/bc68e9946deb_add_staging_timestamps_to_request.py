@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2019-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +14,8 @@
 # limitations under the License.
 #
 # Authors:
-# - Joaquin Bogado <jbogado@linti.unlp.edu.ar>, 2019
-
+# - Joaquín Bogado <jbogado@linti.unlp.edu.ar>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' add staging timestamps to request '''
 
@@ -34,7 +35,7 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'postgresql', 'mysql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         add_column('requests', sa.Column('staging_started_at', sa.DateTime()), schema=schema)
         add_column('requests', sa.Column('staging_finished_at', sa.DateTime()), schema=schema)
@@ -47,7 +48,7 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'postgresql', 'mysql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         drop_column('requests', 'staging_started_at', schema=schema)
         drop_column('requests', 'staging_finished_at', schema=schema)

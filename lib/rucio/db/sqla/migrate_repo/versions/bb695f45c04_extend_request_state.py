@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2015-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,9 +14,10 @@
 # limitations under the License.
 #
 # Authors:
-# - Vincent Garonne <vgaronne@gmail.com>, 2015-2017
+# - Vincent Garonne <vincent.garonne@cern.ch>, 2015-2017
 # - Martin Barisits <martin.barisits@cern.ch>, 2016
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019-2021
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' extend request state '''
 
@@ -45,8 +47,8 @@ def upgrade():
         add_column('requests', sa.Column('submitter_id', sa.Integer()), schema=schema[:-1])
         add_column('sources', sa.Column('is_using', sa.Boolean()), schema=schema[:-1])
 
-    elif context.get_context().dialect.name == 'mysql':
-        op.execute('ALTER TABLE ' + schema + 'requests DROP CHECK REQUESTS_STATE_CHK')  # pylint: disable=no-member
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
+        op.drop_constraint('REQUESTS_STATE_CHK', 'requests', type_='check')
         create_check_constraint(constraint_name='REQUESTS_STATE_CHK', table_name='requests',
                                 condition="state in ('Q', 'G', 'S', 'D', 'F', 'L', 'N', 'O', 'A', 'U')")
         add_column('requests', sa.Column('submitter_id', sa.Integer()), schema=schema[:-1])
@@ -74,8 +76,8 @@ def downgrade():
         drop_column('requests', 'submitter_id', schema=schema[:-1])
         drop_column('sources', 'is_using', schema=schema[:-1])
 
-    elif context.get_context().dialect.name == 'mysql':
-        op.execute('ALTER TABLE ' + schema + 'requests DROP CHECK REQUESTS_STATE_CHK')  # pylint: disable=no-member
+    elif context.get_context().dialect.name in ['mysql', 'mariadb']:
+        op.drop_constraint('REQUESTS_STATE_CHK', 'requests', type_='check')
         create_check_constraint(constraint_name='REQUESTS_STATE_CHK', table_name='requests',
                                 condition="state in ('Q', 'G', 'S', 'D', 'F', 'L')")
         drop_column('requests', 'submitter_id', schema=schema[:-1])

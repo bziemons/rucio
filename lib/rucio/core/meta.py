@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2012-2020 CERN
+# Copyright 2012-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2013-2020
 # - Hannes Hansen <hannes.jakob.hansen@cern.ch>, 2018
 # - Patrick Austin <patrick.austin@stfc.ac.uk>, 2020
-# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020-2021
 # - Martin Barisits <martin.barisits@cern.ch>, 2020
 
 from __future__ import print_function
@@ -78,7 +78,7 @@ def add_key(key, key_type, value_type=None, value_regexp=None, session=None):
         if ('UNIQUE constraint failed' in error.args[0]) \
            or ('conflicts with persistent instance' in error.args[0]) \
            or match('.*IntegrityError.*ORA-00001: unique constraint.*DID_KEYS_PK.*violated.*', error.args[0]) \
-           or match('.*IntegrityError.*1062.*Duplicate entry.*for key.*', error.args[0]) \
+           or match('.*IntegrityError.*Duplicate entry.*for key.*', error.args[0]) \
            or match('.*IntegrityError.*duplicate key value violates unique constraint.*', error.args[0]) \
            or match('.*UniqueViolation.*duplicate key value violates unique constraint.*', error.args[0]) \
            or match('.*IntegrityError.*columns? key.*not unique.*', error.args[0]):
@@ -129,7 +129,7 @@ def add_value(key, value, session=None):
         if ('UNIQUE constraint failed' in error.args[0]) \
            or ('conflicts with persistent instance' in error.args[0]) \
            or match('.*IntegrityError.*ORA-00001: unique constraint.*DID_KEYS_PK.*violated.*', error.args[0]) \
-           or match('.*IntegrityError.*1062.*Duplicate entry.*for key.*', error.args[0]) \
+           or match('.*IntegrityError.*Duplicate entry.*for key.*', error.args[0]) \
            or match('.*IntegrityError.*duplicate key value violates unique constraint.*', error.args[0]) \
            or match('.*UniqueViolation.*duplicate key value violates unique constraint.*', error.args[0]) \
            or match('.*IntegrityError.*columns? key.*value.*not unique.*', error.args[0]):

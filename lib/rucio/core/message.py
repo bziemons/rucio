@@ -106,30 +106,23 @@ def retrieve_messages(bulk=1000, thread=None, total_threads=None, event_type=Non
         # Step 1:
         # MySQL does not support limits in nested queries, limit on the outer query instead.
         # This is not as performant, but the best we can get from MySQL.
-        # FIXME: SQLAlchemy generates wrong nowait MySQL8 statement for MySQL5
-        #        Remove once this is resolved in SQLAlchemy
-        if session.bind.dialect.name == 'mysql':
+        if session.bind.dialect.name in ['mysql', 'mariadb']:
             subquery = subquery.order_by(Message.created_at)
-            query = session.query(Message.id,
-                                  Message.created_at,
-                                  Message.event_type,
-                                  Message.payload,
-                                  Message.services)\
-                           .filter(Message.id.in_(subquery))
         else:
             subquery = subquery.order_by(Message.created_at).limit(bulk)
-            query = session.query(Message.id,
-                                  Message.created_at,
-                                  Message.event_type,
-                                  Message.payload,
-                                  Message.services)\
-                           .filter(Message.id.in_(subquery))\
-                           .with_for_update(nowait=True)
+
+        query = session.query(Message.id,
+                              Message.created_at,
+                              Message.event_type,
+                              Message.payload,
+                              Message.services)\
+                       .filter(Message.id.in_(subquery))\
+                       .with_for_update(nowait=True)
 
         # Step 2:
         # MySQL does not support limits in nested queries, limit on the outer query instead.
         # This is not as performant, but the best we can get from MySQL.
-        if session.bind.dialect.name == 'mysql':
+        if session.bind.dialect.name in ['mysql', 'mariadb']:
             query = query.limit(bulk)
 
         # Step 3:

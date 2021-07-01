@@ -29,7 +29,7 @@
 # - Luc Goossens <luc.goossens@cern.ch>, 2020
 # - Eli Chadwick <eli.chadwick@stfc.ac.uk>, 2020
 # - Patrick Austin <patrick.austin@stfc.ac.uk>, 2020
-# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2020-2021
 # - Eric Vaandering <ewv@fnal.gov>, 2020-2021
 # - James Perry <j.perry@epcc.ed.ac.uk>, 2020
 # - Radu Carpa <radu.carpa@cern.ch>, 2021
@@ -270,7 +270,7 @@ def add_rule(dids, account, copies, rse_expression, grouping, weight, lifetime, 
                 except IntegrityError as error:
                     if match('.*ORA-00001.*', str(error.args[0])) \
                             or match('.*IntegrityError.*UNIQUE constraint failed.*', str(error.args[0])) \
-                            or match('.*1062.*Duplicate entry.*for key.*', str(error.args[0])) \
+                            or match('.*IntegrityError.*Duplicate entry.*for key.*', str(error.args[0])) \
                             or match('.*IntegrityError.*duplicate key value violates unique constraint.*', error.args[0]) \
                             or match('.*UniqueViolation.*duplicate key value violates unique constraint.*', error.args[0]) \
                             or match('.*IntegrityError.*columns? .*not unique.*', error.args[0]):
@@ -1406,7 +1406,7 @@ def update_rule(rule_id, options, session=None):
     except IntegrityError as error:
         if match('.*ORA-00001.*', str(error.args[0])) \
                 or match('.*IntegrityError.*UNIQUE constraint failed.*', str(error.args[0])) \
-                or match('.*1062.*Duplicate entry.*for key.*', str(error.args[0])) \
+                or match('.*IntegrityError.*Duplicate entry.*for key.*', str(error.args[0])) \
                 or match('.*IntegrityError.*columns? .*not unique.*', str(error.args[0])):
             raise DuplicateRule(error.args[0])
         else:

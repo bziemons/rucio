@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2019-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +14,8 @@
 # limitations under the License.
 #
 # Authors:
-# - Aristeidis Fkiaras, <aristeidis.fkiaras@cern.ch>, 2019
+# - Aristeidis Fkiaras <aristeidis.fkiaras@cern.ch>, 2019
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 ''' fix did_meta table missing updated_at, created_at columns '''
 
@@ -33,7 +35,7 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         add_column('did_meta', sa.Column('created_at', sa.DateTime), schema=schema)
         add_column('did_meta', sa.Column('updated_at', sa.DateTime), schema=schema)
@@ -44,7 +46,7 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'mariadb', 'postgresql']:
         schema = context.get_context().version_table_schema if context.get_context().version_table_schema else ''
         drop_column('did_meta', 'created_at', schema=schema)
         drop_column('did_meta', 'updated_at', schema=schema)
