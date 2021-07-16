@@ -18,16 +18,45 @@
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019-2021
 # - Robert Illingworth <illingwo@fnal.gov>, 2019
 
-''' add new rule notification state progress '''
+""" add new rule notification state progress """
 
-from alembic import context, op
-from alembic.op import create_check_constraint
+from enum import Enum
 
-from rucio.db.sqla.util import try_drop_constraint
+import sqlalchemy
+from alembic import op
 
 # Alembic revision identifiers
 revision = '01eaf73ab656'
 down_revision = '90f47792bb76'
+
+
+class OldRuleNotification(Enum):
+    YES = 'Y'
+    NO = 'N'
+    CLOSE = 'C'
+
+
+old_rule_notification_enum = sqlalchemy.Enum(
+    OldRuleNotification,
+    name='RULES_NOTIFICATION_CHK',
+    create_constraint=True,
+    values_callable=lambda enum: [entry.value for entry in enum],
+)
+
+
+class NewRuleNotification(Enum):
+    YES = 'Y'
+    NO = 'N'
+    CLOSE = 'C'
+    PROGRESS = 'P'
+
+
+new_rule_notification_enum = sqlalchemy.Enum(
+    NewRuleNotification,
+    name='RULES_NOTIFICATION_CHK',
+    create_constraint=True,
+    values_callable=lambda enum: [entry.value for entry in enum],
+)
 
 
 def upgrade():
@@ -35,22 +64,12 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
-
-    if context.get_context().dialect.name == 'oracle':
-        try_drop_constraint('RULES_NOTIFICATION_CHK', 'rules')
-        create_check_constraint(constraint_name='RULES_NOTIFICATION_CHK', table_name='rules',
-                                condition="notification in ('Y', 'N', 'C', 'P')")
-
-    elif context.get_context().dialect.name == 'postgresql':
-        op.execute('ALTER TABLE ' + schema + 'rules DROP CONSTRAINT IF EXISTS "RULES_NOTIFICATION_CHK", ALTER COLUMN notification TYPE CHAR')
-        op.execute('DROP TYPE \"RULES_NOTIFICATION_CHK\"')
-        op.execute("CREATE TYPE \"RULES_NOTIFICATION_CHK\" AS ENUM('Y', 'N', 'C', 'P')")
-        op.execute("ALTER TABLE %srules ALTER COLUMN notification TYPE \"RULES_NOTIFICATION_CHK\" USING notification::\"RULES_NOTIFICATION_CHK\"" % schema)
-
-    elif context.get_context().dialect.name == 'mysql':
-        create_check_constraint(constraint_name='RULES_NOTIFICATION_CHK', table_name='rules',
-                                condition="notification in ('Y', 'N', 'C', 'P')")
+    with op.batch_alter_table('rules') as batch_op:
+        batch_op.alter_column(
+            'notification',
+            type_=new_rule_notification_enum,
+            existing_type=old_rule_notification_enum,
+        )
 
 
 def downgrade():
@@ -58,19 +77,9 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
-
-    if context.get_context().dialect.name == 'oracle':
-        try_drop_constraint('RULES_NOTIFICATION_CHK', 'rules')
-        create_check_constraint(constraint_name='RULES_NOTIFICATION_CHK', table_name='rules',
-                                condition="notification in ('Y', 'N', 'C')")
-
-    elif context.get_context().dialect.name == 'postgresql':
-        op.execute('ALTER TABLE ' + schema + 'rules DROP CONSTRAINT IF EXISTS "RULES_NOTIFICATION_CHK", ALTER COLUMN notification TYPE CHAR')
-        op.execute('DROP TYPE "RULES_NOTIFICATION_CHK"')
-        op.execute("CREATE TYPE \"RULES_NOTIFICATION_CHK\" AS ENUM('Y', 'N', 'C')")
-        op.execute("ALTER TABLE %srules ALTER COLUMN notification TYPE \"RULES_NOTIFICATION_CHK\" USING notification::\"RULES_NOTIFICATION_CHK\"" % schema)
-
-    elif context.get_context().dialect.name == 'mysql':
-        create_check_constraint(constraint_name='RULES_NOTIFICATION_CHK', table_name='rules',
-                                condition="notification in ('Y', 'N', 'C')")
+    with op.batch_alter_table('rules') as batch_op:
+        batch_op.alter_column(
+            'notification',
+            type_=old_rule_notification_enum,
+            existing_type=new_rule_notification_enum,
+        )
