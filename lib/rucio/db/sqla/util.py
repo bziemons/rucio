@@ -44,6 +44,7 @@ from sqlalchemy.sql.expression import select, text
 
 from rucio import alembicrevision
 from rucio.common.config import config_get
+from rucio.common.exception import DatabaseException
 from rucio.common.types import InternalAccount
 from rucio.core.account_counter import create_counters_for_new_account
 from rucio.db.sqla import models
@@ -56,10 +57,9 @@ if TYPE_CHECKING:
     from sqlalchemy.engine import Inspector  # noqa: F401
 
 
-def build_database():
-    """ Applies the schema to the database. Run this command once to build the database. """
-    engine = get_engine()
-
+def build_schema(postgresql_use_schema=False):
+    """Creates and selects the new schema."""
+    engine = get_engine(use_schema=False)
     schema = config_get('database', 'schema', raise_exception=False)
     if schema:
         print('Schema set in config, trying to create schema:', schema)
@@ -68,6 +68,14 @@ def build_database():
         except Exception as e:
             print('Cannot create schema, please validate manually if schema creation is needed, continuing:', e)
 
+        if postgresql_use_schema and engine.dialect.name == 'postgresql':
+            print('Adding schema', schema, 'to postgresql user search_path')
+            engine.execute(sqlalchemy.text(f'SET search_path TO "{schema}",public'))
+
+
+def build_database():
+    """ Applies the schema to the database. Run this command once to build the database. """
+    engine = get_engine()
     models.register_models(engine)
 
     # Put the database under version control
@@ -83,12 +91,14 @@ def dump_schema():
 
 def destroy_database():
     """ Removes the schema from the database. Only useful for test cases or malicious intents. """
-    engine = get_engine()
-
     try:
+        engine = get_engine(use_schema=True)
         models.unregister_models(engine)
-    except Exception as e:
-        print('Cannot destroy schema -- assuming already gone, continuing:', e)
+    except DatabaseException as e:
+        if len(e.args) > 0 and 'No such schema' in str(e.args[0]):
+            print('Schema already gone')
+        else:
+            raise
 
 
 def drop_everything():
@@ -98,7 +108,7 @@ def drop_everything():
     as it handles cyclical constraints between tables.
     Ref. https://github.com/sqlalchemy/sqlalchemy/wiki/DropEverything
     """
-    engine = get_engine()
+    engine = get_engine(use_schema=False)
 
     # the transaction only applies if the DB supports
     # transactional DDL, i.e. Postgresql, MS SQL Server

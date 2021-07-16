@@ -29,6 +29,8 @@ import sys
 
 from functools import wraps
 from inspect import isgeneratorfunction
+
+import sqlalchemy
 from retrying import retry
 from threading import Lock
 from os.path import basename
@@ -167,7 +169,7 @@ def my_on_connect(dbapi_con, connection_record):
     dbapi_con.action = caller
 
 
-def get_engine():
+def get_engine(use_schema=True):
     """ Creates a engine to a specific database.
         :returns: engine
     """
@@ -196,6 +198,20 @@ def get_engine():
         elif 'oracle' in sql_connection:
             event.listen(_ENGINE, 'connect', my_on_connect)
     assert _ENGINE
+    schema = config_get(DATABASE_SECTION, 'schema', raise_exception=False)
+    if use_schema and schema:
+        if _ENGINE.dialect.name == 'postgresql':
+            _ENGINE.execute(sqlalchemy.text(f"SET SESSION search_path TO '{schema}'"))
+        elif _ENGINE.dialect.name == 'oracle':
+            _ENGINE.execute(sqlalchemy.text(f"SET SCHEMA '{schema}'"))
+        elif _ENGINE.dialect.name in ['mysql']:
+            try:
+                _ENGINE.execute(sqlalchemy.text(f'USE {schema}'))
+            except sqlalchemy.exc.OperationalError as e:
+                if 'Unknown database' in str(e):
+                    raise DatabaseException(f"No such schema '{schema}'")
+                else:
+                    raise
     return _ENGINE
 
 
