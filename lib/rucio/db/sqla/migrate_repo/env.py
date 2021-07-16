@@ -1,4 +1,5 @@
-# Copyright 2013-2019 CERN for the benefit of the ATLAS collaboration.
+# -*- coding: utf-8 -*-
+# Copyright 2015-2021 CERN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +14,11 @@
 # limitations under the License.
 #
 # Authors:
-# - Vincent Garonne <vincent.garonne@cern.ch>, 2014
+# - Vincent Garonne <vincent.garonne@cern.ch>, 2015-2016
+# - Martin Barisits <martin.barisits@cern.ch>, 2017
+# - Hannes Hansen <hannes.jakob.hansen@cern.ch>, 2018
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019
-#
-#  PY3K COMPATIBLE
+# - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
 from __future__ import with_statement
 
@@ -67,7 +69,8 @@ def run_migrations_offline():
         target_metadata=target_metadata,
         version_table_schema=version_table_schema,
         literal_binds=True,
-        include_schemas=True)
+        include_schemas=True,
+    )
 
     with context.begin_transaction():
         context.run_migrations()
@@ -89,16 +92,12 @@ def run_migrations_online():
         poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
-        # Forcing the default is needed for PostgreSQL installations with named schemas.
-        # For other databases it doesn't matter.
-        # https://github.com/sqlalchemy/alembic/issues/409
-        conn = connection.execution_options(schema_translate_map={None: params.get('version_table_schema', None)})
-
         context.configure(
-            connection=conn,
+            connection=connection,
             target_metadata=target_metadata,
             version_table_schema=params.get('version_table_schema', None),
-            include_schemas=True)
+            include_schemas=True,
+        )
 
         with context.begin_transaction():
             context.run_migrations()
