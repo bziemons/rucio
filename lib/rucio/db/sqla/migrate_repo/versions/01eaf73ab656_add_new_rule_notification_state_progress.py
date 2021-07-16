@@ -30,18 +30,29 @@ revision = '01eaf73ab656'
 down_revision = '90f47792bb76'
 
 
+def load_rules(bind, schema):
+    return sqlalchemy.Table(
+        'rules',
+        sqlalchemy.MetaData(),
+        autoload_with=bind,
+        schema=schema,
+    )
+
+
 class OldRuleNotification(Enum):
     YES = 'Y'
     NO = 'N'
     CLOSE = 'C'
 
 
-old_rule_notification_enum = sqlalchemy.Enum(
-    OldRuleNotification,
-    name='RULES_NOTIFICATION_CHK',
-    create_constraint=True,
-    values_callable=lambda enum: [entry.value for entry in enum],
-)
+def old_rule_notification_enum(metadata):
+    return sqlalchemy.Enum(
+        OldRuleNotification,
+        name='RULES_NOTIFICATION_CHK',
+        create_constraint=True,
+        values_callable=lambda enum: [entry.value for entry in enum],
+        metadata=metadata,
+    )
 
 
 class NewRuleNotification(Enum):
@@ -51,12 +62,14 @@ class NewRuleNotification(Enum):
     PROGRESS = 'P'
 
 
-new_rule_notification_enum = sqlalchemy.Enum(
-    NewRuleNotification,
-    name='RULES_NOTIFICATION_CHK',
-    create_constraint=True,
-    values_callable=lambda obj: [enum.value for enum in obj],
-)
+def new_rule_notification_enum(metadata):
+    return sqlalchemy.Enum(
+        NewRuleNotification,
+        name='RULES_NOTIFICATION_CHK',
+        create_constraint=True,
+        values_callable=lambda enum: [entry.value for entry in enum],
+        metadata=metadata,
+    )
 
 
 def upgrade():
@@ -64,11 +77,13 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
+    rules = load_rules(bind=op.get_bind(), schema=op.get_context().version_table_schema)
     op.alter_column(
-        'rules',
+        rules.name,
         'notification',
-        type_=new_rule_notification_enum,
-        existing_type=old_rule_notification_enum,
+        type_=new_rule_notification_enum(metadata=rules.metadata),
+        existing_type=old_rule_notification_enum(metadata=rules.metadata),
+        schema=rules.schema,
     )
 
 
@@ -77,9 +92,11 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
+    rules = load_rules(bind=op.get_bind(), schema=op.get_context().version_table_schema)
     op.alter_column(
-        'rules',
+        rules.name,
         'notification',
-        type_=old_rule_notification_enum,
-        existing_type=new_rule_notification_enum,
+        type_=old_rule_notification_enum(metadata=rules.metadata),
+        existing_type=new_rule_notification_enum(metadata=rules.metadata),
+        schema=rules.schema,
     )
