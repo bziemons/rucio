@@ -87,11 +87,13 @@ def upgrade():
         )
 
     with op.batch_alter_table('account_map') as batch_op:
+        to_type = new_identities_enum if op.get_context().dialect.name == 'postgresql' else new_account_map_identities_enum
+        from_type = old_identities_enum if op.get_context().dialect.name == 'postgresql' else old_account_map_identities_enum
         batch_op.alter_column(
             'identity_type',
-            type_=new_identities_enum,
-            existing_type=old_account_map_identities_enum,
-            postgresql_using=f'identity_type::text::"{old_identities_enum.name}"',
+            type_=to_type,
+            existing_type=from_type,
+            postgresql_using=f'identity_type::text::"{from_type.name}"',
         )
 
 
@@ -109,9 +111,11 @@ def downgrade():
         )
 
     with op.batch_alter_table('account_map') as batch_op:
+        from_type = new_identities_enum if op.get_context().dialect.name == 'postgresql' else new_account_map_identities_enum
+        to_type = old_identities_enum if op.get_context().dialect.name == 'postgresql' else old_account_map_identities_enum
         batch_op.alter_column(
             'identity_type',
-            type_=old_identities_enum,
-            existing_type=new_account_map_identities_enum,
+            type_=to_type,
+            existing_type=from_type,
             postgresql_using=f'identity_type::text::"{new_identities_enum.name}"',
         )
