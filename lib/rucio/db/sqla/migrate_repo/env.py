@@ -23,10 +23,16 @@
 from __future__ import with_statement
 
 from logging.config import fileConfig
+from typing import TYPE_CHECKING
 
 import sqlalchemy
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, CheckConstraint
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.sql.ddl import DropConstraint
+
+if TYPE_CHECKING:
+    from sqlalchemy.dialects.postgresql.base import PGDDLCompiler
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -110,6 +116,20 @@ def run_migrations_online():
 
         with context.begin_transaction():
             context.run_migrations()
+
+
+@compiles(DropConstraint, 'postgresql')
+def _pgsql_drop_constraint(op: DropConstraint, compiler: "PGDDLCompiler", **kw):
+    """
+    This function makes it possible to use drop_constraint on postgresql enum types.
+    It makes it easier to write common code for all databases.
+    """
+    if isinstance(op.element, CheckConstraint):
+        # do not include ALTER TABLE, if constraint is a check constraint,
+        # because it is actually a schema-wide type in postgresql
+        return f'DROP TYPE {compiler.preparer.format_constraint(op.element)}'
+    else:
+        return compiler.visit_drop_constraint(op, **kw)
 
 
 if context.is_offline_mode():

@@ -50,10 +50,9 @@ def upgrade():
     Upgrade the database to this revision
     '''
 
-    op.add_column(
-        'rules',
-        sqlalchemy.Column('notification', rule_notification_enum),
-    )
+    with op.batch_alter_table('rules') as batch_op:
+        rule_notification_enum.create(bind=batch_op.get_bind(), checkfirst=True)
+        batch_op.add_column(sqlalchemy.Column('notification', rule_notification_enum))
 
 
 def downgrade():
@@ -63,4 +62,5 @@ def downgrade():
 
     with op.batch_alter_table('rules') as batch_op:
         batch_op.drop_column('notification')
+        batch_op.drop_constraint(rule_notification_enum.name, type_='check')
         rule_notification_enum.drop(bind=batch_op.get_bind(), checkfirst=True)
