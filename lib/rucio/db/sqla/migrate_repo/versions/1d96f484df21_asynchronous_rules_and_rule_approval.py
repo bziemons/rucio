@@ -20,63 +20,75 @@
 # - Robert Illingworth <illingwo@fnal.gov>, 2019
 # - Benedikt Ziemons <benedikt.ziemons@cern.ch>, 2021
 
-''' asynchronous rules and rule approval '''
+""" asynchronous rules and rule approval """
 
-import sqlalchemy as sa
-from alembic import context, op
-from alembic.op import add_column, create_check_constraint, drop_column
+from enum import Enum
 
-from rucio.db.sqla.util import try_drop_constraint
+import sqlalchemy
+from alembic import op
 
 # Alembic revision identifiers
 revision = '1d96f484df21'
 down_revision = '3d9813fab443'
 
 
+class OldRuleState(Enum):
+    REPLICATING = 'R'
+    OK = 'O'
+    STUCK = 'S'
+    SUSPENDED = 'U'
+    WAITING_APPROVAL = 'W'
+    INJECT = 'I'
+
+
+old_rule_state_enum = sqlalchemy.Enum(
+    OldRuleState,
+    name='RULES_STATE_CHK',
+    create_constraint=True,
+    values_callable=lambda enum: [entry.value for entry in enum],
+)
+
+
+class NewRuleState(Enum):
+    REPLICATING = 'R'
+    OK = 'O'
+    STUCK = 'S'
+    SUSPENDED = 'U'
+    WAITING_APPROVAL = 'W'
+    INJECT = 'I'
+
+
+new_rule_state_enum = sqlalchemy.Enum(
+    NewRuleState,
+    name='RULES_STATE_CHK',
+    create_constraint=True,
+    values_callable=lambda enum: [entry.value for entry in enum],
+)
+
+
 def upgrade():
-    '''
-    Upgrade the database to this revision
-    '''
-
-    schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
-
-    if context.get_context().dialect.name == 'oracle':
-        add_column('rules', sa.Column('ignore_account_limit', sa.Boolean(name='RULES_IGNORE_ACCOUNT_LIMIT_CHK', create_constraint=True), default=False))
-        try_drop_constraint('RULES_STATE_CHK', 'rules')
-        create_check_constraint('RULES_STATE_CHK', 'rules', "state IN ('S', 'R', 'U', 'O', 'W', 'I')")
-
-    elif context.get_context().dialect.name == 'postgresql':
-        add_column('rules', sa.Column('ignore_account_limit', sa.Boolean(name='RULES_IGNORE_ACCOUNT_LIMIT_CHK', create_constraint=True), default=False), schema=schema[:-1])
-        op.execute('ALTER TABLE ' + schema + 'rules DROP CONSTRAINT IF EXISTS "RULES_STATE_CHK", ALTER COLUMN state TYPE CHAR')
-        op.execute("DROP TYPE \"RULES_STATE_CHK\"")
-        op.execute("CREATE TYPE \"RULES_STATE_CHK\" AS ENUM('S', 'R', 'U', 'O', 'W', 'I')")
-        op.execute("ALTER TABLE %srules ALTER COLUMN state TYPE \"RULES_STATE_CHK\" USING state::\"RULES_STATE_CHK\"" % schema)
-
-    elif context.get_context().dialect.name == 'mysql':
-        add_column('rules', sa.Column('ignore_account_limit', sa.Boolean(name='RULES_IGNORE_ACCOUNT_LIMIT_CHK', create_constraint=True), default=False), schema=schema[:-1])
-        op.execute('ALTER TABLE ' + schema + 'rules DROP CHECK RULES_STATE_CHK')  # pylint: disable=no-member
-        create_check_constraint('RULES_STATE_CHK', 'rules', "state IN ('S', 'R', 'U', 'O', 'W', 'I')")
+    with op.batch_alter_table('rules') as batch_op:
+        batch_op.add_column(
+            sqlalchemy.Column(
+                'ignore_account_limit',
+                sqlalchemy.Boolean(name='RULES_IGNORE_ACCOUNT_LIMIT_CHK', create_constraint=True),
+                default=False,
+            )
+        )
+        batch_op.alter_column(
+            'state',
+            type_=new_rule_state_enum,
+            existing_type=old_rule_state_enum,
+            postgresql_using=f'state::name::"{new_rule_state_enum.name}"',
+        )
 
 
 def downgrade():
-    '''
-    Downgrade the database to the previous revision
-    '''
-
-    schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
-
-    if context.get_context().dialect.name == 'oracle':
-        drop_column('rules', 'ignore_account_limit')
-        try_drop_constraint('RULES_STATE_CHK', 'rules')
-        create_check_constraint('RULES_STATE_CHK', 'rules', "state IN ('S', 'R', 'U', 'O')")
-
-    elif context.get_context().dialect.name == 'postgresql':
-        drop_column('rules', 'ignore_account_limit', schema=schema[:-1])
-        op.execute('ALTER TABLE ' + schema + 'rules DROP CONSTRAINT IF EXISTS "RULES_STATE_CHK", ALTER COLUMN state TYPE CHAR')
-        op.execute("DROP TYPE \"RULES_STATE_CHK\"")
-        op.execute("CREATE TYPE \"RULES_STATE_CHK\" AS ENUM('S', 'R', 'U', 'O')")
-        op.execute("ALTER TABLE %srules ALTER COLUMN state TYPE \"RULES_STATE_CHK\" USING state::\"RULES_STATE_CHK\"" % schema)
-
-    elif context.get_context().dialect.name == 'mysql':
-        drop_column('rules', 'ignore_account_limit', schema=schema[:-1])
-        create_check_constraint('RULES_STATE_CHK', 'rules', "state IN ('S', 'R', 'U', 'O')")
+    with op.batch_alter_table('rules') as batch_op:
+        batch_op.drop_column('ignore_account_limit')
+        batch_op.alter_column(
+            'state',
+            type_=old_rule_state_enum,
+            existing_type=new_rule_state_enum,
+            postgresql_using=f'state::name::"{old_rule_state_enum.name}"',
+        )

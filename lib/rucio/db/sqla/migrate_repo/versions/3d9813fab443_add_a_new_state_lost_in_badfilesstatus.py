@@ -17,33 +17,52 @@
 # - Cedric Serfon <cedric.serfon@cern.ch>, 2015
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019
 
-''' add a new state LOST in BadFilesStatus '''
+""" add a new state LOST in BadFilesStatus and switch to enum type """
 
-from alembic import context
-from alembic.op import create_check_constraint
+from enum import Enum
 
-from rucio.db.sqla.util import try_drop_constraint
+import sqlalchemy
+from alembic import op
 
 # Alembic revision identifiers
 revision = '3d9813fab443'
 down_revision = '1fc15ab60d43'
 
 
-def upgrade():
-    '''
-    Upgrade the database to this revision
-    '''
+class BadFilesStatus(Enum):
+    BAD = 'B'
+    DELETED = 'D'
+    LOST = 'L'
+    RECOVERED = 'R'
+    SUSPICIOUS = 'S'
 
-    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
-        create_check_constraint(constraint_name='BAD_REPLICAS_STATE_CHK', table_name='bad_replicas',
-                                condition="state in ('B', 'D', 'L', 'R', 'S')")
+
+bad_replica_state_enum = sqlalchemy.Enum(
+    BadFilesStatus,
+    name='BAD_REPLICAS_STATE_CHK',
+    create_constraint=True,
+    values_callable=lambda enum: [entry.value for entry in enum],
+)
+
+
+def upgrade():
+    with op.batch_alter_table('bad_replicas') as batch_op:
+        bad_replica_state_enum.create(bind=batch_op.get_bind(), checkfirst=True)
+        batch_op.alter_column(
+            'state',
+            type_=bad_replica_state_enum,
+            existing_type=sqlalchemy.String(1),
+            postgresql_using=f'state::name::"{bad_replica_state_enum.name}"',
+        )
 
 
 def downgrade():
-
-    '''
-    Downgrade the database to the previous revision
-    '''
-
-    if context.get_context().dialect.name in ['oracle', 'postgresql']:
-        try_drop_constraint('BAD_REPLICAS_STATE_CHK', 'bad_replicas')
+    with op.batch_alter_table('bad_replicas') as batch_op:
+        batch_op.alter_column(
+            'state',
+            type_=sqlalchemy.String(1),
+            existing_type=bad_replica_state_enum,
+            postgresql_using=f'state::"char"',
+        )
+        batch_op.drop_constraint(bad_replica_state_enum.name, type_='check')
+        bad_replica_state_enum.drop(bind=batch_op.get_bind(), checkfirst=True)

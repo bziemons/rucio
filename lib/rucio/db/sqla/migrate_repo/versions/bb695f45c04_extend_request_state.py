@@ -17,66 +17,84 @@
 # - Martin Barisits <martin.barisits@cern.ch>, 2016
 # - Mario Lassnig <mario.lassnig@cern.ch>, 2019-2021
 
-''' extend request state '''
+""" extend request state """
 
+from enum import Enum
+
+import sqlalchemy
 import sqlalchemy as sa
-from alembic import context, op
-from alembic.op import (add_column, create_check_constraint,
-                        drop_constraint, drop_column)
-
-from rucio.db.sqla.util import try_drop_constraint
+from alembic import op
 
 # Alembic revision identifiers
 revision = 'bb695f45c04'
 down_revision = '3082b8cef557'
 
 
+class OldRequestState(Enum):
+    QUEUED = 'Q'
+    SUBMITTING = 'G'
+    SUBMITTED = 'S'
+    FAILED = 'F'
+    DONE = 'D'
+    LOST = 'L'
+
+
+old_request_state_enum = sqlalchemy.Enum(
+    OldRequestState,
+    name='REQUESTS_STATE_CHK',
+    create_constraint=True,
+    values_callable=lambda enum: [entry.value for entry in enum],
+)
+
+
+class NewRequestState(Enum):
+    QUEUED = 'Q'
+    SUBMITTING = 'G'
+    SUBMITTED = 'S'
+    FAILED = 'F'
+    DONE = 'D'
+    LOST = 'L'
+    NO_SOURCES = 'N'
+    ONLY_TAPE_SOURCES = 'O'
+    SUBMISSION_FAILED = 'A'
+    SUSPEND = 'U'
+
+
+new_request_state_enum = sqlalchemy.Enum(
+    NewRequestState,
+    name='REQUESTS_STATE_CHK',
+    create_constraint=True,
+    values_callable=lambda enum: [entry.value for entry in enum],
+)
+
+
 def upgrade():
-    '''
-    Upgrade the database to this revision
-    '''
+    with op.batch_alter_table('requests') as batch_op:
+        batch_op.alter_column(
+            'state',
+            type_=new_request_state_enum,
+            server_default=sqlalchemy.text(f"'{NewRequestState.QUEUED.value}'"),
+            existing_type=old_request_state_enum,
+            existing_server_default=sqlalchemy.text(f"'{OldRequestState.QUEUED.value}'"),
+            postgresql_using=f'state::"{new_request_state_enum.name}"',
+        )
+        batch_op.add_column(sa.Column('submitter_id', sa.Integer()))
 
-    schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
-
-    if context.get_context().dialect.name in ['oracle', 'postgresql']:
-        try_drop_constraint('REQUESTS_STATE_CHK', 'requests')
-        create_check_constraint(constraint_name='REQUESTS_STATE_CHK', table_name='requests',
-                                condition="state in ('Q', 'G', 'S', 'D', 'F', 'L', 'N', 'O', 'A', 'U')")
-        add_column('requests', sa.Column('submitter_id', sa.Integer()), schema=schema[:-1])
-        add_column('sources', sa.Column('is_using', sa.Boolean()), schema=schema[:-1])
-
-    elif context.get_context().dialect.name == 'mysql':
-        op.execute('ALTER TABLE ' + schema + 'requests DROP CHECK REQUESTS_STATE_CHK')  # pylint: disable=no-member
-        create_check_constraint(constraint_name='REQUESTS_STATE_CHK', table_name='requests',
-                                condition="state in ('Q', 'G', 'S', 'D', 'F', 'L', 'N', 'O', 'A', 'U')")
-        add_column('requests', sa.Column('submitter_id', sa.Integer()), schema=schema[:-1])
-        add_column('sources', sa.Column('is_using', sa.Boolean()), schema=schema[:-1])
+    with op.batch_alter_table('sources') as batch_op:
+        batch_op.add_column(sa.Column('is_using', sa.Boolean()))
 
 
 def downgrade():
-    '''
-    Downgrade the database to the previous revision
-    '''
+    with op.batch_alter_table('requests') as batch_op:
+        batch_op.alter_column(
+            'state',
+            type_=old_request_state_enum,
+            server_default=sqlalchemy.text(f"'{OldRequestState.QUEUED.value}'"),
+            existing_type=new_request_state_enum,
+            existing_server_default=sqlalchemy.text(f"'{NewRequestState.QUEUED.value}'"),
+            postgresql_using=f'state::"{old_request_state_enum.name}"',
+        )
+        batch_op.drop_column('submitter_id')
 
-    schema = context.get_context().version_table_schema + '.' if context.get_context().version_table_schema else ''
-
-    if context.get_context().dialect.name == 'oracle':
-        try_drop_constraint('REQUESTS_STATE_CHK', 'requests')
-        create_check_constraint(constraint_name='REQUESTS_STATE_CHK', table_name='requests',
-                                condition="state in ('Q', 'G', 'S', 'D', 'F', 'L')")
-        drop_column('requests', 'submitter_id')
-        drop_column('sources', 'is_using')
-
-    elif context.get_context().dialect.name == 'postgresql':
-        drop_constraint('REQUESTS_STATE_CHK', 'requests', type_='check')
-        create_check_constraint(constraint_name='REQUESTS_STATE_CHK', table_name='requests',
-                                condition="state in ('Q', 'G', 'S', 'D', 'F', 'L')")
-        drop_column('requests', 'submitter_id', schema=schema[:-1])
-        drop_column('sources', 'is_using', schema=schema[:-1])
-
-    elif context.get_context().dialect.name == 'mysql':
-        op.execute('ALTER TABLE ' + schema + 'requests DROP CHECK REQUESTS_STATE_CHK')  # pylint: disable=no-member
-        create_check_constraint(constraint_name='REQUESTS_STATE_CHK', table_name='requests',
-                                condition="state in ('Q', 'G', 'S', 'D', 'F', 'L')")
-        drop_column('requests', 'submitter_id', schema=schema[:-1])
-        drop_column('sources', 'is_using', schema=schema[:-1])
+    with op.batch_alter_table('sources') as batch_op:
+        batch_op.drop_column('is_using')

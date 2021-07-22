@@ -69,6 +69,7 @@ def upgrade():
             'notification',
             type_=new_rule_notification_enum,
             existing_type=old_rule_notification_enum,
+            postgresql_using=f'notification::name::"{new_rule_notification_enum.name}"',
         )
 
 
@@ -82,4 +83,5 @@ def downgrade():
             'notification',
             type_=old_rule_notification_enum,
             existing_type=new_rule_notification_enum,
+            postgresql_using=f'notification::name::"{old_rule_notification_enum.name}"',
         )
