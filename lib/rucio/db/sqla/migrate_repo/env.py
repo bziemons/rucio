@@ -24,6 +24,7 @@ from __future__ import with_statement
 
 from logging.config import fileConfig
 
+import sqlalchemy
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
@@ -69,7 +70,6 @@ def run_migrations_offline():
         target_metadata=target_metadata,
         version_table_schema=version_table_schema,
         literal_binds=True,
-        include_schemas=True,
     )
 
     with context.begin_transaction():
@@ -86,17 +86,24 @@ def run_migrations_online():
 
     params = config.get_section(config.config_ini_section)
 
-    connectable = engine_from_config(
+    engine = engine_from_config(
         config.get_section(config.config_ini_section),
         prefix='sqlalchemy.',
-        poolclass=pool.NullPool)
+        poolclass=pool.NullPool,
+    )
 
-    with connectable.connect() as connection:
+    with engine.connect() as connection:
+        schema = params.get('version_table_schema', None)
+        if engine.dialect.name == 'postgresql' and schema:
+            # override schema according to
+            # https://alembic.sqlalchemy.org/en/latest/cookbook.html#rudimental-schema-level-multi-tenancy-for-postgresql-databases
+            connection.execute(sqlalchemy.text('SET search_path TO ' + schema))
+            connection.dialect.default_schema_name = schema
+
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            version_table_schema=params.get('version_table_schema', None),
-            include_schemas=True,
+            version_table_schema=schema,
         )
 
         with context.begin_transaction():
