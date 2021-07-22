@@ -97,7 +97,9 @@ def run_migrations_online():
         if engine.dialect.name == 'postgresql' and schema:
             # override schema according to
             # https://alembic.sqlalchemy.org/en/latest/cookbook.html#rudimental-schema-level-multi-tenancy-for-postgresql-databases
-            connection.execute(sqlalchemy.text('SET search_path TO ' + schema))
+
+            # see also rucio.db.sqla.util.build_schema
+            connection.execute(sqlalchemy.text('SET search_path TO ' + schema + ',public'))
             connection.dialect.default_schema_name = schema
 
         context.configure(
