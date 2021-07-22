@@ -75,5 +75,6 @@ def downgrade():
     Downgrade the database to the previous revision
     '''
 
-    try_drop_constraint('COLLECTION_REPLICAS_STATE_CHK', 'collection_replicas', type_='check')
-    drop_table('collection_replicas')
+    if context.get_context().dialect.name in ['oracle', 'mysql', 'postgresql']:
+        try_drop_constraint('COLLECTION_REPLICAS_STATE_CHK', 'collection_replicas', type_='check')
+        drop_table('collection_replicas')
