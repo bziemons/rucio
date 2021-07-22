@@ -74,10 +74,6 @@ new_account_map_identities_enum = sqlalchemy.Enum(
 
 
 def upgrade():
-    """
-    Upgrade the database to this revision
-    """
-
     with op.batch_alter_table('identities') as batch_op:
         batch_op.alter_column(
             'identity_type',
@@ -98,10 +94,6 @@ def upgrade():
 
 
 def downgrade():
-    """
-    Downgrade the database to the previous revision
-    """
-
     with op.batch_alter_table('identities') as batch_op:
         batch_op.alter_column(
             'identity_type',
@@ -117,5 +109,5 @@ def downgrade():
             'identity_type',
             type_=to_type,
             existing_type=from_type,
-            postgresql_using=f'identity_type::text::"{new_identities_enum.name}"',
+            postgresql_using=f'identity_type::text::"{from_type.name}"',
         )
