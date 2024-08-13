@@ -56,7 +56,7 @@ services:
       - RUCIO_SOURCE_DIR=/rucio_source
       - RDBMS
   ruciodb:
-    image: docker.io/postgres:14
+    image: docker.io/postgres:16
     platform: linux/amd64
     environment:
       - POSTGRES_USER=rucio
@@ -94,8 +94,8 @@ services:
       - ACTIVEMQ_CONFIG_SCHEDULERENABLED=true
       - ACTIVEMQ_USERS_hermes=supersecret
       - ACTIVEMQ_CONFIG_QUEUES_events=/queue/events'
-  postgres14:
-    image: docker.io/postgres:14
+  postgres16:
+    image: docker.io/postgres:16
     platform: linux/amd64
     profiles:
       - postgres14
@@ -297,7 +297,7 @@ services:
     profiles:
       - externalmetadata
   postgres:
-    image: docker.io/postgres:14
+    image: docker.io/postgres:16
     platform: linux/amd64
     profiles:
       - externalmetadata

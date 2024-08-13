@@ -82,7 +82,7 @@ def parse_and_filter_matrix(args):
             if case['SUITE'] != args.suite:
                 return False
         if args.database:
-            if case['RDBMS'] != args.database:
+            if 'RDBMS' in case and case['RDBMS'] != args.database:
                 return False
         return True
 
