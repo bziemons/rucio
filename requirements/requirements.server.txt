@@ -53,12 +53,11 @@ cryptography==44.0.2
     # via
     #   globus-sdk
     #   oic
+    #   oracledb
     #   paramiko
     #   pyjwt
     #   pyspnego
     #   requests-kerberos
-oracledb==3.1.1
-    # via -r requirements.server.in
 decorator==5.2.1
     # via
     #   dogpile-cache
@@ -144,6 +143,8 @@ multidict==6.1.0
     #   aiohttp
     #   yarl
 oic==1.7.0
+    # via -r requirements.server.in
+oracledb==3.1.1
     # via -r requirements.server.in
 packaging==24.1
     # via
@@ -283,7 +284,7 @@ urllib3==1.26.19
     #   requests
 websocket-client==1.8.0
     # via stomp-py
-werkzeug==3.1.3
+werkzeug==3.1.4
     # via
     #   -r requirements.server.in
     #   flask
