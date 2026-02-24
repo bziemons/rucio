@@ -175,7 +175,7 @@ jobs:
       - name: Test Protocol Rclone
         run: docker exec -t dev-rucio-1 tools/pytest.sh -v --tb=short tests/test_rse_protocol_rclone.py
       - name: Test Conveyor
-        run: docker exec -t dev-rucio-1 tools/pytest.sh -v --tb=short tests/test_conveyor.py
+        run: docker exec -t dev-rucio-1 tools/pytest.sh -v -rA --tb=short tests/test_conveyor.py
       - name: Execute transfer and export FTS transfer details
         id: tpc
         shell: bash
