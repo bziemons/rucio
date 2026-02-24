@@ -25,7 +25,7 @@ if [[ ${#@} -eq 0 ]]; then
   ARGS=(".")
 else
   echo "Running pytest with extra arguments: $@"
-  # Convert /opt/rucio/tests/ paths to relative paths when in /rucio_source
+  # Convert /opt/rucio/tests/ paths to relative paths when in /opt/rucio/src
   ARGS=()
   for arg in "$@"; do
     if [[ "$arg" =~ ^/opt/rucio/tests/ ]]; then

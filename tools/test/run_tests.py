@@ -405,7 +405,7 @@ def run_test_directly(
     Execute the suite by invoking ``tools/test/test.sh`` directly.
 
     The direct path keeps orchestration costs low. We start a single container, mount the
-    relevant parts of the repository (``/rucio_source`` plus ``/opt/rucio/{tools,bin,lib,tests}``)
+    relevant parts of the repository (``/opt/rucio/src`` plus ``/opt/rucio/{tools,bin,lib,tests}``)
     and then execute the shell helper that performs dependency installation, bootstrapping,
     and pytest execution. Additional matrix-provided environment variables are passed in via
     ``--env`` flags and optional ``tests`` selectors are surfaced through the ``TESTS`` variable.
@@ -420,9 +420,9 @@ def run_test_directly(
         [
             # Install Rucio directly from the mounted source
             'ln -sf pyproject.server.toml pyproject.toml',
-            'pip install --no-cache-dir -e /rucio_source',
+            'pip install --no-cache-dir -e /opt/rucio/src',
             # Change to the source directory so that relative paths work
-            'cd /rucio_source',
+            'cd /opt/rucio/src',
             './tools/test/test.sh' + (' -p' if tests else ''),
         ]
     )
@@ -440,7 +440,7 @@ def run_test_directly(
             '--rm',
             *pod_net_arg,
             # Mount the source code from the PR as writable
-            '-v', f"{os.path.abspath(os.curdir)}:/rucio_source",
+            '-v', f"{os.path.abspath(os.curdir)}:/opt/rucio/src",
             '-v', f"{os.path.abspath(os.curdir)}/tools:/opt/rucio/tools:Z",
             '-v', f"{os.path.abspath(os.curdir)}/bin:/opt/rucio/bin:Z",
             '-v', f"{os.path.abspath(os.curdir)}/lib:/opt/rucio/lib:Z",
@@ -509,11 +509,11 @@ def run_with_httpd(
                 'rucio': {
                     'image': image,
                     'environment': [f'{k}={v}' for k, v in caseenv.items()],
-                    'working_dir': '/rucio_source',
-                    'entrypoint': ['/rucio_source/etc/docker/dev/rucio/entrypoint.sh'],
+                    'working_dir': '/opt/rucio/src',
+                    'entrypoint': ['/opt/rucio/src/etc/docker/dev/rucio/entrypoint.sh'],
                     'volumes': [
                         # Mount the current source code from the PR as writable
-                        f"{os.path.abspath(os.curdir)}:/rucio_source",
+                        f"{os.path.abspath(os.curdir)}:/opt/rucio/src",
                         f"{os.path.abspath(os.curdir)}/tools:/opt/rucio/tools:Z",
                         f"{os.path.abspath(os.curdir)}/bin:/opt/rucio/bin:Z",
                         f"{os.path.abspath(os.curdir)}/lib:/opt/rucio/lib:Z",
@@ -566,7 +566,7 @@ def run_with_httpd(
 
             # Install Rucio directly from the mounted source
             run('docker', *namespace_args, 'exec', rucio_container, 'ln', '-sf', 'pyproject.server.toml', 'pyproject.toml')
-            run('docker', *namespace_args, 'exec', rucio_container, 'pip', 'install', '--no-cache-dir', '-e', '/rucio_source')
+            run('docker', *namespace_args, 'exec', rucio_container, 'pip', 'install', '--no-cache-dir', '-e', '/opt/rucio/src')
 
             # Running test.sh
             if tests:

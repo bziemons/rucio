@@ -77,11 +77,6 @@ else
     echo 'Warning: memcached on port 11211 did not become ready; skipping flush'
 fi
 
-if [ -f './requirements/requirements.dev.txt' ]; then
-    echo 'Update dependencies with pip'
-    pip install --upgrade -r ./requirements/requirements.dev.txt
-fi
-
 if test ${pip_only}; then
     exit
 fi

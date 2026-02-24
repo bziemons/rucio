@@ -8,7 +8,7 @@ services:
     container_name: dev-rucioclient-1
     image: "docker.io/${DOCKER_REPO:-rucio}/rucio-dev:${RUCIO_DEV_PREFIX:-}${RUCIO_TAG:-latest}"
     platform: linux/amd64
-    entrypoint: ["/rucio_source/etc/docker/dev/rucio/entrypoint.sh"]
+    entrypoint: ["/opt/rucio/src/etc/docker/dev/rucio/entrypoint.sh"]
     command: ["sleep", "infinity"]
     profiles:
       - client
@@ -24,21 +24,18 @@ services:
       - ../../certs/ssh/ruciouser_sshkey.pub:/root/.ssh/ruciouser_sshkey.pub:z
       - ../../certs/ssh/ruciouser_sshkey:/root/.ssh/ruciouser_sshkey:z
       - ./rucio/idpsecrets.json:/opt/rucio/etc/idpsecrets.json:ro
-      - ../../../tools:/opt/rucio/tools:Z
-      - ../../../bin:/opt/rucio/bin:Z
-      - ../../../lib:/opt/rucio/lib:Z
-      - ../../../tests:/opt/rucio/tests:Z
-      - ../../../:/rucio_source:Z
+      - ../../../lib/rucio:/opt/rucio/lib/rucio:z
+      - ../../../:/opt/rucio/src:z
     environment:
       - REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
-      - RUCIO_SOURCE_DIR=/rucio_source
+      - RUCIO_SOURCE_DIR=/opt/rucio/src
       - RDBMS
 
   rucio:
     container_name: ${RUCIO_HTTPD_CONTAINER_NAME:-dev-rucio-1}
     image: "docker.io/${DOCKER_REPO:-rucio}/rucio-dev:${RUCIO_DEV_PREFIX:-}${RUCIO_TAG:-latest}"
     platform: linux/amd64
-    entrypoint: ["/rucio_source/etc/docker/dev/rucio/entrypoint.sh"]
+    entrypoint: ["/opt/rucio/src/etc/docker/dev/rucio/entrypoint.sh"]
     command: ["httpd","-D","FOREGROUND"]
     volumes:
       - ../../certs/rucio_ca.pem:/etc/grid-security/certificates/5fca1cb1.0:ro
@@ -52,14 +49,11 @@ services:
       - ../../certs/ssh/ruciouser_sshkey.pub:/root/.ssh/ruciouser_sshkey.pub:z
       - ../../certs/ssh/ruciouser_sshkey:/root/.ssh/ruciouser_sshkey:z
       - ./rucio/idpsecrets.json:/opt/rucio/etc/idpsecrets.json:ro
-      - ../../../tools:/opt/rucio/tools:Z
-      - ../../../bin:/opt/rucio/bin:Z
-      - ../../../lib:/opt/rucio/lib:Z
-      - ../../../tests:/opt/rucio/tests:Z
-      - ../../../:/rucio_source
+      - ../../../lib/rucio:/opt/rucio/lib/rucio:z
+      - ../../../:/opt/rucio/src:z
     environment:
       - REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
-      - RUCIO_SOURCE_DIR=/rucio_source
+      - RUCIO_SOURCE_DIR=/opt/rucio/src
       - RDBMS
       - DEV_PROFILES
     depends_on:

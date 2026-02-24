@@ -20,6 +20,8 @@ if [ -z "$RUCIO_HOME" ]; then
 fi
 
 mkdir -p "$RUCIO_HOME/etc"
+rmdir "$RUCIO_HOME/tools"
+ln -s "$RUCIO_SOURCE_DIR/tools" "$RUCIO_HOME/tools"
 
 generate_rucio_cfg(){
   	local override=$1
@@ -64,9 +66,6 @@ fi
 
 update-ca-trust
 
-# Create python symlink for gfal-rm compatibility
-if [ ! -f /usr/bin/python ] && [ -f /usr/bin/python3 ]; then
-    ln -sf /usr/bin/python3 /usr/bin/python
-fi
+/opt/rucio/bin/pip install -e /opt/rucio/src
 
 exec "$@"

@@ -612,14 +612,14 @@ if [[ "$USE_MASTER" == "true" ]]; then
   echo
   echo ">>> Since '--master' is selected, let's ensure the container's environment has the most"
   echo ">>> recent dev dependencies (we'll just upgrade packages; old ones won't be removed)."
-  echo ">>> Requirements considered: /rucio_source/requirements/requirements.dev.txt"
+  echo ">>> Requirements considered: /opt/rucio/src/requirements/requirements.dev.txt"
 
   # 1) Upgrade pip just in case
   $COMPOSE_CMD --project-name dev exec rucio python3 -m pip install --no-cache-dir --upgrade pip
 
   # 2) Now install/upgrade from dev requirements
   $COMPOSE_CMD --project-name dev exec rucio \
-    python3 -m pip install --no-cache-dir --upgrade -r /rucio_source/requirements/requirements.dev.txt
+    python3 -m pip install --no-cache-dir --upgrade -r /opt/rucio/src/requirements/requirements.dev.txt
 
   echo ">>> Done installing/upgrading dev requirements for master!"
 fi
