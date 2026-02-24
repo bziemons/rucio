@@ -650,7 +650,11 @@ def test_receiver_archiving(vo, did_factory, root_account, caches_mock, scitags_
         """
         def _perform_request_update(self, msg, *, session=None, logger=logging.log):
             ret = super()._perform_request_update(msg, session=session, logger=logger)
-            received_messages[msg['file_metadata']['request_id']] = msg
+            key = msg['file_metadata']['request_id']
+            prev = received_messages.get(key)
+            received_messages[key] = msg
+            if prev != msg:
+                logger(logging.INFO, 'test_receiver_archiving ReceiverWrapper._perform_request_update changed %s: %s', key, msg)
             return ret
 
     with patch('rucio.daemons.conveyor.receiver.Receiver', ReceiverWrapper):
