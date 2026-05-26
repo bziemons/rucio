@@ -666,6 +666,10 @@ def test_receiver_archiving(vo, did_factory, root_account, caches_mock, scitags_
             rse_core.add_rse_attribute(dst_rse_id, RseAttr.ARCHIVE_TIMEOUT, 60)
 
             did = did_factory.upload_test_file(src_rse)
+
+            # test sleep to see if this triggers failed test due to receiver fts3 update
+            time.sleep(10)
+
             rule_core.add_rule(dids=[did], account=root_account, copies=1, rse_expression=dst_rse, grouping='ALL', weight=None, lifetime=None, locked=False, subscription_id=None, activity='test')
             submitter(once=True, rses=[{'id': rse_id} for rse_id in all_rses], group_bulk=2, partition_wait_time=0, transfertype='single', filter_transfertool=None)
 
